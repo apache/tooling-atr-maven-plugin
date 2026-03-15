@@ -97,7 +97,7 @@ public class UploadMojo extends AbstractAtrMojo {
                 (directory != null ? directory + "/" : "") + file.getFileName().toString();
 
         // Upload using ATR client
-        AtrClient client = new AtrClient(url, token, asfuid, getLog());
+        AtrClient client = new AtrClient(url, getServer(), getLog());
         String revisionNumber = client.uploadFile(project, version, target, file);
 
         getLog().info("Upload successful. Revision: " + revisionNumber);

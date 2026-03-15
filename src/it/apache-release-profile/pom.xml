@@ -67,8 +67,6 @@ under the License.
                 </goals>
                 <configuration>
                   <dryRun>true</dryRun>
-                  <asfuid>asfuid</asfuid>
-                  <token>some-token</token>
                   <project>${project.artifactId}</project>
                   <version>${project.version}</version>
                   <files>

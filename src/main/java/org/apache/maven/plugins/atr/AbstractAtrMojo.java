@@ -23,7 +23,13 @@ import java.net.URL;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.settings.Server;
+import org.apache.maven.settings.Settings;
+import org.apache.maven.settings.crypto.DefaultSettingsDecryptionRequest;
+import org.apache.maven.settings.crypto.SettingsDecrypter;
+import org.apache.maven.settings.crypto.SettingsDecryptionResult;
 
 /**
  * Abstract base class for ATR Mojos.
@@ -51,16 +57,52 @@ public abstract class AbstractAtrMojo extends AbstractMojo {
     protected boolean dryRun;
 
     /**
-     * Personal Access Token (PAT) for ATR API authentication.
+     * Server ID from settings.xml containing ATR credentials.
+     * The server's username should be the ASF user ID, and the password should be the Personal Access Token (PAT).
      */
-    @Parameter(property = "atr.token", required = true)
-    protected String token;
+    @Parameter(property = "atr.serverId", defaultValue = "apache.atr")
+    protected String serverId;
 
     /**
-     * ASF user ID for ATR API authentication.
+     * Maven settings.
      */
-    @Parameter(property = "atr.asfuid", required = true)
-    protected String asfuid;
+    @Parameter(defaultValue = "${settings}", readonly = true, required = true)
+    protected Settings settings;
+
+    /**
+     * Settings decrypter component.
+     */
+    @Component
+    protected SettingsDecrypter settingsDecrypter;
+
+    /**
+     * Get and decrypt the server configuration.
+     *
+     * @return the decrypted server
+     * @throws MojoExecutionException if server cannot be found or decrypted
+     */
+    protected Server getServer() throws MojoExecutionException {
+        Server server = settings.getServer(serverId);
+        if (server == null) {
+            throw new MojoExecutionException("Server '" + serverId + "' not found in settings.xml. "
+                    + "Please configure it with your ASF user ID as username and PAT as password.");
+        }
+
+        DefaultSettingsDecryptionRequest request = new DefaultSettingsDecryptionRequest(server);
+        SettingsDecryptionResult result = settingsDecrypter.decrypt(request);
+
+        if (!result.getProblems().isEmpty()) {
+            getLog().warn("Problems decrypting server credentials: " + result.getProblems());
+        }
+
+        server = result.getServer();
+        if (server.getUsername() == null || server.getPassword() == null) {
+            throw new MojoExecutionException("Server '" + serverId
+                    + "' must have username (ASF user ID) and password (PAT) configured in settings.xml.");
+        }
+
+        return server;
+    }
 
     @Override
     public final void execute() throws MojoExecutionException, MojoFailureException {

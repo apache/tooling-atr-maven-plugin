@@ -32,6 +32,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.settings.Server;
 
 /**
  * Client for interacting with the ATR (Apache Test Release) API.
@@ -41,8 +42,7 @@ import org.apache.maven.plugin.logging.Log;
 public class AtrClient {
 
     private final URL baseUrl;
-    private final String pat;
-    private final String asfuid;
+    private final Server server;
     private final Log log;
     private final ObjectMapper objectMapper;
     private String jwt;
@@ -51,14 +51,12 @@ public class AtrClient {
      * Create a new ATR client.
      *
      * @param baseUrl the base URL of the ATR server
-     * @param pat the Personal Access Token for authentication
-     * @param asfuid the ASF user ID
+     * @param server the Maven server configuration containing credentials
      * @param log the Maven logger
      */
-    public AtrClient(URL baseUrl, String pat, String asfuid, Log log) {
+    public AtrClient(URL baseUrl, Server server, Log log) {
         this.baseUrl = baseUrl;
-        this.pat = pat;
-        this.asfuid = asfuid;
+        this.server = server;
         this.log = log;
         this.objectMapper = new ObjectMapper();
     }
@@ -75,7 +73,7 @@ public class AtrClient {
 
         try {
             // Create JWT request
-            JwtCreateRequest request = new JwtCreateRequest(asfuid, pat);
+            JwtCreateRequest request = new JwtCreateRequest(server.getUsername(), server.getPassword());
 
             // Create connection
             URL jwtUrl = new URL(baseUrl, "api/jwt/create");
