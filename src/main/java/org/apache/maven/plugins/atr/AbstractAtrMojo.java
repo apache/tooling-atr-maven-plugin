@@ -18,13 +18,16 @@
  */
 package org.apache.maven.plugins.atr;
 
+import java.io.File;
 import java.net.URL;
 
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.MavenProject;
 import org.apache.maven.settings.Server;
 import org.apache.maven.settings.Settings;
 import org.apache.maven.settings.crypto.DefaultSettingsDecryptionRequest;
@@ -62,6 +65,25 @@ public abstract class AbstractAtrMojo extends AbstractMojo {
      */
     @Parameter(property = "atr.serverId", defaultValue = "apache.atr")
     protected String serverId;
+
+    /**
+     * If set to true, the plugin will only execute in the execution root directory (typically the top-level
+     * directory of a multi-module build). This prevents the plugin from running multiple times in child modules.
+     */
+    @Parameter(property = "atr.runOnlyAtExecutionRoot", defaultValue = "false")
+    protected boolean runOnlyAtExecutionRoot;
+
+    /**
+     * Maven project.
+     */
+    @Parameter(defaultValue = "${project}", readonly = true, required = true)
+    protected MavenProject project;
+
+    /**
+     * Maven session.
+     */
+    @Parameter(defaultValue = "${session}", readonly = true, required = true)
+    protected MavenSession session;
 
     /**
      * Maven settings.
@@ -111,7 +133,23 @@ public abstract class AbstractAtrMojo extends AbstractMojo {
             return;
         }
 
+        if (runOnlyAtExecutionRoot && !isExecutionRoot()) {
+            getLog().info("Skipping ATR plugin execution (not execution root)");
+            return;
+        }
+
         atrExecute();
+    }
+
+    /**
+     * Check if the current project is the execution root.
+     *
+     * @return true if this is the execution root
+     */
+    private boolean isExecutionRoot() {
+        File executionRootDirectory = new File(session.getExecutionRootDirectory());
+        File projectBaseDir = project.getBasedir();
+        return executionRootDirectory.equals(projectBaseDir);
     }
 
     /**
