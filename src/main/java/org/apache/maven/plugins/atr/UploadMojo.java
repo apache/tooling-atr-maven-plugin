@@ -35,7 +35,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 public class UploadMojo extends AbstractAtrMojo {
 
     /**
-     * The project name for ATR upload.
+     * The project id for ATR upload.
      */
     @Parameter(property = "atr.project", required = true)
     private String project;
@@ -54,7 +54,6 @@ public class UploadMojo extends AbstractAtrMojo {
 
     /**
      * The target directory in ATR upload area where files will be uploaded.
-     * If not specified, files will be uploaded to the default location.
      */
     @Parameter(property = "atr.directory")
     private String directory;
@@ -67,9 +66,6 @@ public class UploadMojo extends AbstractAtrMojo {
             getLog().info("Uploading artifacts to ATR...");
         }
         getLog().info("Composing release " + url + "compose/" + project + "/" + version);
-        if (directory != null) {
-            getLog().info("Directory: " + directory);
-        }
         getLog().info("Files: " + files.length);
 
         for (Path file : files) {

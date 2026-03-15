@@ -105,14 +105,14 @@ public class AtrClient {
     /**
      * Upload a file to ATR.
      *
-     * @param project the project name
+     * @param project the project id
      * @param version the version
-     * @param relpath the relative path within the release (e.g., "artifactId-version-source-release.zip")
+     * @param path the relative path within the release (e.g., "artifactId-version-source-release.zip")
      * @param file the file to upload
      * @return the revision number
      * @throws MojoExecutionException if the upload fails
      */
-    public String uploadFile(String project, String version, String relpath, Path file) throws MojoExecutionException {
+    public String uploadFile(String project, String version, String path, Path file) throws MojoExecutionException {
         // Ensure we have a valid JWT
         ensureJwt();
 
@@ -122,7 +122,7 @@ public class AtrClient {
             String content = Base64.getEncoder().encodeToString(fileBytes);
 
             // Create upload request
-            ReleaseUploadRequest request = new ReleaseUploadRequest(project, version, relpath, content);
+            ReleaseUploadRequest request = new ReleaseUploadRequest(project, version, path, content);
 
             // Create connection
             URL uploadUrl = new URL(baseUrl, "api/release/upload");
