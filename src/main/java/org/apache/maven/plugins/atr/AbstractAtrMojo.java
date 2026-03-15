@@ -50,6 +50,18 @@ public abstract class AbstractAtrMojo extends AbstractMojo {
     @Parameter(property = "atr.dryRun", defaultValue = "false")
     protected boolean dryRun;
 
+    /**
+     * Personal Access Token (PAT) for ATR API authentication.
+     */
+    @Parameter(property = "atr.token", required = true)
+    protected String token;
+
+    /**
+     * ASF user ID for ATR API authentication.
+     */
+    @Parameter(property = "atr.asfuid", required = true)
+    protected String asfuid;
+
     @Override
     public final void execute() throws MojoExecutionException, MojoFailureException {
         if (skip) {

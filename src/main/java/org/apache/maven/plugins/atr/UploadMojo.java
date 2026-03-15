@@ -92,9 +92,15 @@ public class UploadMojo extends AbstractAtrMojo {
 
         getLog().info("Uploading: " + file.getFileName() + " to " + getAtrFileUrl(file));
 
-        // TODO: Implement ATR upload logic for single file
-        // This will integrate with the ATR CLI (atr upload) functionality
-        // to upload Apache distribution artifacts to release-test.apache.org
+        // Build target path on ATR space
+        String target =
+                (directory != null ? directory + "/" : "") + file.getFileName().toString();
+
+        // Upload using ATR client
+        AtrClient client = new AtrClient(url, token, asfuid, getLog());
+        String revisionNumber = client.uploadFile(project, version, target, file);
+
+        getLog().info("Upload successful. Revision: " + revisionNumber);
     }
 
     /**

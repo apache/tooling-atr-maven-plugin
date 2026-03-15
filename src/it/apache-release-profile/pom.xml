@@ -27,7 +27,7 @@ under the License.
   </parent>
 
   <groupId>org.apache.maven.its.atr</groupId>
-  <artifactId>test-apache-release</artifactId>
+  <artifactId>maven-atr-test-apache-release</artifactId>
   <version>1.0-SNAPSHOT</version>
 
   <name>ATR Plugin IT - Apache Release Profile</name>
@@ -67,6 +67,8 @@ under the License.
                 </goals>
                 <configuration>
                   <dryRun>true</dryRun>
+                  <asfuid>asfuid</asfuid>
+                  <token>some-token</token>
                   <project>${project.artifactId}</project>
                   <version>${project.version}</version>
                   <files>
