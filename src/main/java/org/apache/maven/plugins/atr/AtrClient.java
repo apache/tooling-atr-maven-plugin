@@ -23,11 +23,13 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Base64;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 
@@ -42,6 +44,7 @@ public class AtrClient {
     private final String pat;
     private final String asfuid;
     private final Log log;
+    private final ObjectMapper objectMapper;
     private String jwt;
 
     /**
@@ -57,6 +60,7 @@ public class AtrClient {
         this.pat = pat;
         this.asfuid = asfuid;
         this.log = log;
+        this.objectMapper = new ObjectMapper();
     }
 
     /**
@@ -70,9 +74,8 @@ public class AtrClient {
         }
 
         try {
-            // Build JSON request for JWT creation
-            String jsonRequest =
-                    "{" + "\"asfuid\":\"" + escapeJson(asfuid) + "\"," + "\"pat\":\"" + escapeJson(pat) + "\"" + "}";
+            // Create JWT request
+            JwtCreateRequest request = new JwtCreateRequest(asfuid, pat);
 
             // Create connection
             URL jwtUrl = new URL(baseUrl, "api/jwt/create");
@@ -83,17 +86,17 @@ public class AtrClient {
 
             // Send request
             try (OutputStream os = conn.getOutputStream()) {
-                os.write(jsonRequest.getBytes(StandardCharsets.UTF_8));
+                objectMapper.writeValue(os, request);
             }
 
             // Check response
             int responseCode = conn.getResponseCode();
             if (responseCode == HttpURLConnection.HTTP_OK || responseCode == HttpURLConnection.HTTP_CREATED) {
-                String response = readResponse(conn.getInputStream());
-                jwt = parseJwt(response);
+                JwtCreateResponse response = objectMapper.readValue(conn.getInputStream(), JwtCreateResponse.class);
+                jwt = response.getJwt();
                 log.debug("JWT created successfully");
             } else {
-                String errorResponse = readResponse(conn.getErrorStream());
+                String errorResponse = readErrorResponse(conn.getErrorStream());
                 throw new MojoExecutionException("Failed to create JWT: HTTP " + responseCode + " - " + errorResponse);
             }
         } catch (IOException e) {
@@ -114,15 +117,14 @@ public class AtrClient {
     public String uploadFile(String project, String version, String relpath, Path file) throws MojoExecutionException {
         // Ensure we have a valid JWT
         ensureJwt();
-        log.warn("upload to " + relpath);
 
         try {
             // Read file content and encode as base64
             byte[] fileBytes = Files.readAllBytes(file);
             String content = Base64.getEncoder().encodeToString(fileBytes);
 
-            // Build JSON request
-            String jsonRequest = buildUploadJsonRequest(project, version, relpath, content);
+            // Create upload request
+            ReleaseUploadRequest request = new ReleaseUploadRequest(project, version, relpath, content);
 
             // Create connection
             URL uploadUrl = new URL(baseUrl, "api/release/upload");
@@ -134,17 +136,18 @@ public class AtrClient {
 
             // Send request
             try (OutputStream os = conn.getOutputStream()) {
-                os.write(jsonRequest.getBytes(StandardCharsets.UTF_8));
+                objectMapper.writeValue(os, request);
             }
 
             // Check response
             int responseCode = conn.getResponseCode();
             if (responseCode == HttpURLConnection.HTTP_CREATED || responseCode == HttpURLConnection.HTTP_ACCEPTED) {
-                String response = readResponse(conn.getInputStream());
-                log.debug("Upload successful: " + response);
-                return parseRevisionNumber(response);
+                ReleaseUploadResponse response =
+                        objectMapper.readValue(conn.getInputStream(), ReleaseUploadResponse.class);
+                log.debug("Upload successful: " + objectMapper.writeValueAsString(response));
+                return response.getRevision() != null ? response.getRevision().getNumber() : "unknown";
             } else {
-                String errorResponse = readResponse(conn.getErrorStream());
+                String errorResponse = readErrorResponse(conn.getErrorStream());
                 throw new MojoExecutionException("Failed to upload file: HTTP " + responseCode + " - " + errorResponse);
             }
         } catch (IOException e) {
@@ -152,25 +155,7 @@ public class AtrClient {
         }
     }
 
-    private String buildUploadJsonRequest(String project, String version, String relpath, String content) {
-        // Simple JSON construction - in production, consider using a JSON library
-        return "{"
-                + "\"project\":\"" + escapeJson(project) + "\","
-                + "\"version\":\"" + escapeJson(version) + "\","
-                + "\"relpath\":\"" + escapeJson(relpath) + "\","
-                + "\"content\":\"" + escapeJson(content) + "\""
-                + "}";
-    }
-
-    private String escapeJson(String str) {
-        return str.replace("\\", "\\\\")
-                .replace("\"", "\\\"")
-                .replace("\n", "\\n")
-                .replace("\r", "\\r")
-                .replace("\t", "\\t");
-    }
-
-    private String readResponse(InputStream is) throws IOException {
+    private String readErrorResponse(InputStream is) throws IOException {
         if (is == null) {
             return "";
         }
@@ -178,40 +163,154 @@ public class AtrClient {
         int bytesRead;
         StringBuilder response = new StringBuilder();
         while ((bytesRead = is.read(buffer)) != -1) {
-            response.append(new String(buffer, 0, bytesRead, StandardCharsets.UTF_8));
+            response.append(new String(buffer, 0, bytesRead));
         }
         return response.toString();
     }
 
-    private String parseRevisionNumber(String jsonResponse) {
-        // Simple JSON parsing - extract revision number
-        // In production, consider using a JSON library
-        int numberIndex = jsonResponse.indexOf("\"number\"");
-        if (numberIndex != -1) {
-            int startQuote = jsonResponse.indexOf("\"", numberIndex + 9);
-            if (startQuote != -1) {
-                int endQuote = jsonResponse.indexOf("\"", startQuote + 1);
-                if (endQuote != -1) {
-                    return jsonResponse.substring(startQuote + 1, endQuote);
-                }
-            }
+    // DTO classes for API requests/responses
+
+    static class JwtCreateRequest {
+        @JsonProperty("asfuid")
+        private String asfuid;
+
+        @JsonProperty("pat")
+        private String pat;
+
+        JwtCreateRequest(String asfuid, String pat) {
+            this.asfuid = asfuid;
+            this.pat = pat;
         }
-        return "unknown";
+
+        public String getAsfuid() {
+            return asfuid;
+        }
+
+        public String getPat() {
+            return pat;
+        }
     }
 
-    private String parseJwt(String jsonResponse) {
-        // Simple JSON parsing - extract JWT token
-        // In production, consider using a JSON library
-        int jwtIndex = jsonResponse.indexOf("\"jwt\"");
-        if (jwtIndex != -1) {
-            int startQuote = jsonResponse.indexOf("\"", jwtIndex + 6);
-            if (startQuote != -1) {
-                int endQuote = jsonResponse.indexOf("\"", startQuote + 1);
-                if (endQuote != -1) {
-                    return jsonResponse.substring(startQuote + 1, endQuote);
-                }
-            }
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    static class JwtCreateResponse {
+        @JsonProperty("jwt")
+        private String jwt;
+
+        public String getJwt() {
+            return jwt;
         }
-        throw new IllegalArgumentException("Failed to parse JWT from response: " + jsonResponse);
+
+        public void setJwt(String jwt) {
+            this.jwt = jwt;
+        }
+    }
+
+    static class ReleaseUploadRequest {
+        @JsonProperty("project")
+        private String project;
+
+        @JsonProperty("version")
+        private String version;
+
+        @JsonProperty("relpath")
+        private String relpath;
+
+        @JsonProperty("content")
+        private String content;
+
+        ReleaseUploadRequest(String project, String version, String relpath, String content) {
+            this.project = project;
+            this.version = version;
+            this.relpath = relpath;
+            this.content = content;
+        }
+
+        public String getProject() {
+            return project;
+        }
+
+        public String getVersion() {
+            return version;
+        }
+
+        public String getRelpath() {
+            return relpath;
+        }
+
+        public String getContent() {
+            return content;
+        }
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    static class ReleaseUploadResponse {
+        @JsonProperty("endpoint")
+        private String endpoint;
+
+        @JsonProperty("revision")
+        private Revision revision;
+
+        public String getEndpoint() {
+            return endpoint;
+        }
+
+        public void setEndpoint(String endpoint) {
+            this.endpoint = endpoint;
+        }
+
+        public Revision getRevision() {
+            return revision;
+        }
+
+        public void setRevision(Revision revision) {
+            this.revision = revision;
+        }
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    static class Revision {
+        @JsonProperty("number")
+        private String number;
+
+        @JsonProperty("asfuid")
+        private String asfuid;
+
+        @JsonProperty("phase")
+        private String phase;
+
+        @JsonProperty("release_name")
+        private String releaseName;
+
+        public String getNumber() {
+            return number;
+        }
+
+        public void setNumber(String number) {
+            this.number = number;
+        }
+
+        public String getAsfuid() {
+            return asfuid;
+        }
+
+        public void setAsfuid(String asfuid) {
+            this.asfuid = asfuid;
+        }
+
+        public String getPhase() {
+            return phase;
+        }
+
+        public void setPhase(String phase) {
+            this.phase = phase;
+        }
+
+        public String getReleaseName() {
+            return releaseName;
+        }
+
+        public void setReleaseName(String releaseName) {
+            this.releaseName = releaseName;
+        }
     }
 }
