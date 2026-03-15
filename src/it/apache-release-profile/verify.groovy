@@ -22,6 +22,7 @@ def buildLog = new File(basedir, 'build.log')
 assert buildLog.exists()
 assert buildLog.text.contains('DRY RUN: Simulating ATR upload')
 assert buildLog.text.contains('DRY RUN: Would upload:')
+assert buildLog.text.contains('Composing release https://release-test.apache.org/compose/test-apache-release/1.0-SNAPSHOT')
 assert buildLog.text.contains('to https://release-test.apache.org/file/test-apache-release/1.0-SNAPSHOT/test-apache-release-1.0-SNAPSHOT-source-release.zip')
 
 return true

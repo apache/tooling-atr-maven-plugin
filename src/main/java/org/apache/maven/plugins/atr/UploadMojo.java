@@ -18,8 +18,6 @@
  */
 package org.apache.maven.plugins.atr;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.file.Path;
 
 import org.apache.maven.plugin.MojoExecutionException;
@@ -68,8 +66,7 @@ public class UploadMojo extends AbstractAtrMojo {
         } else {
             getLog().info("Uploading artifacts to ATR...");
         }
-        getLog().info("Project: " + project);
-        getLog().info("Version: " + version);
+        getLog().info("Composing release " + url + "compose/" + project + "/" + version);
         if (directory != null) {
             getLog().info("Directory: " + directory);
         }
@@ -89,11 +86,11 @@ public class UploadMojo extends AbstractAtrMojo {
      */
     private void upload(Path file) throws MojoExecutionException, MojoFailureException {
         if (dryRun) {
-            getLog().info("DRY RUN: Would upload: " + file.getFileName() + " to " + getComposeUrl(file));
+            getLog().info("DRY RUN: Would upload: " + file.getFileName() + " to " + getAtrFileUrl(file));
             return;
         }
 
-        getLog().info("Uploading: " + file.getFileName() + " to " + getComposeUrl(file));
+        getLog().info("Uploading: " + file.getFileName() + " to " + getAtrFileUrl(file));
 
         // TODO: Implement ATR upload logic for single file
         // This will integrate with the ATR CLI (atr upload) functionality
@@ -101,14 +98,14 @@ public class UploadMojo extends AbstractAtrMojo {
     }
 
     /**
-     * Get the compose URL for a file by combining the base URL, project, version, directory, and filename.
+     * Get the ATR storage URL for a file.
      *
-     * @param file the file to get the compose URL for
-     * @return the compose URL
-     * @throws MojoExecutionException if the URL cannot be constructed
+     * @param file the file to get the ATR file URL for
+     * @return the file URL
      */
-    private URL getComposeUrl(Path file) throws MojoExecutionException {
-        StringBuilder path = new StringBuilder("file/")
+    private String getAtrFileUrl(Path file) {
+        StringBuilder path = new StringBuilder(url.toString())
+                .append("file/")
                 .append(project)
                 .append("/")
                 .append(version)
@@ -117,10 +114,6 @@ public class UploadMojo extends AbstractAtrMojo {
             path.append(directory).append("/");
         }
         path.append(file.getFileName().toString());
-        try {
-            return new URL(url, path.toString());
-        } catch (MalformedURLException e) {
-            throw new MojoExecutionException("Failed to construct compose URL for file: " + file, e);
-        }
+        return path.toString();
     }
 }
