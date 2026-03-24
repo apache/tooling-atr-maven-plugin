@@ -66,7 +66,7 @@ public class AtrClient {
      *
      * @throws MojoExecutionException if JWT creation fails
      */
-    private void ensureJwt() throws MojoExecutionException {
+    void ensureJwt() throws MojoExecutionException {
         if (jwt != null) {
             return;
         }

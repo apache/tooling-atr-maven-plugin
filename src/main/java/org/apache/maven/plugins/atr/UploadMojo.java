@@ -68,19 +68,26 @@ public class UploadMojo extends AbstractAtrMojo {
         getLog().info("Composing release " + url + "compose/" + project + "/" + version);
         getLog().info("Files: " + files.length);
 
+        AtrClient client = null;
+        if (!dryRun) {
+            client = new AtrClient(url, getServer(), getLog());
+            client.ensureJwt();
+        }
+
         for (Path file : files) {
-            upload(file);
+            upload(client, file);
         }
     }
 
     /**
      * Upload a single file to ATR.
      *
+     * @param client the ATR client to use for upload
      * @param file the file to upload
      * @throws MojoExecutionException if an error occurs during upload
      * @throws MojoFailureException if the upload fails
      */
-    private void upload(Path file) throws MojoExecutionException, MojoFailureException {
+    private void upload(AtrClient client, Path file) throws MojoExecutionException, MojoFailureException {
         if (dryRun) {
             getLog().info("DRY RUN: Would upload: " + file.getFileName() + " to " + getAtrFileUrl(file));
             return;
@@ -93,7 +100,6 @@ public class UploadMojo extends AbstractAtrMojo {
                 (directory != null ? directory + "/" : "") + file.getFileName().toString();
 
         // Upload using ATR client
-        AtrClient client = new AtrClient(url, getServer(), getLog());
         String revisionNumber = client.uploadFile(project, version, target, file);
 
         getLog().info("Upload successful. Revision: " + revisionNumber);
