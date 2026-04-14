@@ -29,7 +29,6 @@ import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.settings.Server;
-import org.apache.maven.settings.Settings;
 import org.apache.maven.settings.crypto.DefaultSettingsDecryptionRequest;
 import org.apache.maven.settings.crypto.SettingsDecrypter;
 import org.apache.maven.settings.crypto.SettingsDecryptionResult;
@@ -85,23 +84,11 @@ public abstract class AbstractAtrMojo extends AbstractMojo {
     @Parameter(property = "atr.runOnlyAtExecutionRoot", defaultValue = "false")
     protected boolean runOnlyAtExecutionRoot;
 
-    /**
-     * Maven project.
-     */
-    @Parameter(defaultValue = "${project}", readonly = true, required = true)
+    @Component
     protected MavenProject mavenProject;
 
-    /**
-     * Maven session.
-     */
-    @Parameter(defaultValue = "${session}", readonly = true, required = true)
+    @Component
     protected MavenSession session;
-
-    /**
-     * Maven settings.
-     */
-    @Parameter(defaultValue = "${settings}", readonly = true, required = true)
-    protected Settings settings;
 
     /**
      * Settings decrypter component.
@@ -116,7 +103,7 @@ public abstract class AbstractAtrMojo extends AbstractMojo {
      * @throws MojoExecutionException if server cannot be found or decrypted
      */
     protected Server getServer() throws MojoExecutionException {
-        Server server = settings.getServer(serverId);
+        Server server = session.getSettings().getServer(serverId);
         if (server == null) {
             throw new MojoExecutionException("Server '" + serverId + "' not found in settings.xml. "
                     + "Please configure it with your ASF user ID as username and PAT as password.");

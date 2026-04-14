@@ -56,11 +56,7 @@ public class UploadMojo extends AbstractAtrMojo {
         getLog().info("Composing release " + url + "compose/" + project + "/" + version);
         getLog().info("Files: " + files.length);
 
-        AtrClient client = null;
-        if (!dryRun) {
-            client = createAtrClient();
-            client.ensureJwt();
-        }
+        AtrClient client = createAtrClient();
 
         for (Path file : files) {
             upload(client, file);

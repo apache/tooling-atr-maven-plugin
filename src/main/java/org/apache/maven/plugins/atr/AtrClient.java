@@ -131,7 +131,7 @@ public class AtrClient {
      * @return the release information, or null if the version does not exist
      * @throws MojoExecutionException if the check fails
      */
-    public ReleaseInfo checkVersion(String project, String version) throws MojoExecutionException {
+    public ReleaseInfo getRelease(String project, String version) throws MojoExecutionException {
         // Ensure we have a valid JWT
         ensureJwt();
 
@@ -146,18 +146,18 @@ public class AtrClient {
             int responseCode = conn.getResponseCode();
             if (responseCode == HttpURLConnection.HTTP_OK) {
                 ReleaseGetResponse response = objectMapper.readValue(conn.getInputStream(), ReleaseGetResponse.class);
-                log.debug("Version check successful: " + objectMapper.writeValueAsString(response));
+                log.debug("Get release successful: " + objectMapper.writeValueAsString(response));
                 return response.getRelease();
             } else if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
-                log.debug("Version does not exist: " + project + " " + version);
+                log.debug("Release does not exist: " + project + " " + version);
                 return null;
             } else {
                 String errorResponse = readErrorResponse(conn.getErrorStream());
                 throw new MojoExecutionException(
-                        "Failed to check version: HTTP " + responseCode + " - " + errorResponse);
+                        "Failed to get release: HTTP " + responseCode + " - " + errorResponse);
             }
         } catch (IOException e) {
-            throw new MojoExecutionException("Failed to check version in ATR: " + project + " " + version, e);
+            throw new MojoExecutionException("Failed to get release in ATR: " + project + " " + version, e);
         }
     }
 
