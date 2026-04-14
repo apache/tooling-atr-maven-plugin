@@ -103,6 +103,44 @@ public class AtrClient {
     }
 
     /**
+     * Check if a version exists in ATR and get its release information.
+     *
+     * @param project the project id
+     * @param version the version
+     * @return the release information, or null if the version does not exist
+     * @throws MojoExecutionException if the check fails
+     */
+    public ReleaseInfo checkVersion(String project, String version) throws MojoExecutionException {
+        // Ensure we have a valid JWT
+        ensureJwt();
+
+        try {
+            // Create connection
+            URL checkUrl = new URL(baseUrl, "api/release/get/" + project + "/" + version);
+            HttpURLConnection conn = (HttpURLConnection) checkUrl.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("Authorization", "Bearer " + jwt);
+
+            // Check response
+            int responseCode = conn.getResponseCode();
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                ReleaseGetResponse response = objectMapper.readValue(conn.getInputStream(), ReleaseGetResponse.class);
+                log.debug("Version check successful: " + objectMapper.writeValueAsString(response));
+                return response.getRelease();
+            } else if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
+                log.debug("Version does not exist: " + project + " " + version);
+                return null;
+            } else {
+                String errorResponse = readErrorResponse(conn.getErrorStream());
+                throw new MojoExecutionException(
+                        "Failed to check version: HTTP " + responseCode + " - " + errorResponse);
+            }
+        } catch (IOException e) {
+            throw new MojoExecutionException("Failed to check version in ATR: " + project + " " + version, e);
+        }
+    }
+
+    /**
      * Upload a file to ATR.
      *
      * @param project the project id
@@ -309,6 +347,180 @@ public class AtrClient {
 
         public void setReleaseName(String releaseName) {
             this.releaseName = releaseName;
+        }
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    static class ReleaseGetResponse {
+        @JsonProperty("endpoint")
+        private String endpoint;
+
+        @JsonProperty("release")
+        private ReleaseInfo release;
+
+        public String getEndpoint() {
+            return endpoint;
+        }
+
+        public void setEndpoint(String endpoint) {
+            this.endpoint = endpoint;
+        }
+
+        public ReleaseInfo getRelease() {
+            return release;
+        }
+
+        public void setRelease(ReleaseInfo release) {
+            this.release = release;
+        }
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class ReleaseInfo {
+        // Phase constants
+        public static final String PHASE_RELEASE_CANDIDATE_DRAFT = "release_candidate_draft";
+        public static final String PHASE_RELEASE_CANDIDATE = "release_candidate";
+        public static final String PHASE_RELEASE_PREVIEW = "release_preview";
+        public static final String PHASE_RELEASE = "release";
+
+        @JsonProperty("name")
+        private String name;
+
+        @JsonProperty("phase")
+        private String phase;
+
+        @JsonProperty("project_name")
+        private String projectName;
+
+        @JsonProperty("version")
+        private String version;
+
+        @JsonProperty("created")
+        private String created;
+
+        @JsonProperty("latest_revision_number")
+        private String latestRevisionNumber;
+
+        @JsonProperty("vote_started")
+        private String voteStarted;
+
+        @JsonProperty("vote_resolved")
+        private String voteResolved;
+
+        @JsonProperty("released")
+        private String released;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getPhase() {
+            return phase;
+        }
+
+        public void setPhase(String phase) {
+            this.phase = phase;
+        }
+
+        public String getProjectName() {
+            return projectName;
+        }
+
+        public void setProjectName(String projectName) {
+            this.projectName = projectName;
+        }
+
+        public String getVersion() {
+            return version;
+        }
+
+        public void setVersion(String version) {
+            this.version = version;
+        }
+
+        public String getCreated() {
+            return created;
+        }
+
+        public void setCreated(String created) {
+            this.created = created;
+        }
+
+        public String getLatestRevisionNumber() {
+            return latestRevisionNumber;
+        }
+
+        public void setLatestRevisionNumber(String latestRevisionNumber) {
+            this.latestRevisionNumber = latestRevisionNumber;
+        }
+
+        public String getVoteStarted() {
+            return voteStarted;
+        }
+
+        public void setVoteStarted(String voteStarted) {
+            this.voteStarted = voteStarted;
+        }
+
+        public String getVoteResolved() {
+            return voteResolved;
+        }
+
+        public void setVoteResolved(String voteResolved) {
+            this.voteResolved = voteResolved;
+        }
+
+        public String getReleased() {
+            return released;
+        }
+
+        public void setReleased(String released) {
+            this.released = released;
+        }
+
+        /**
+         * Check if the release is being composed (not yet in vote).
+         *
+         * @return true if the release is being composed
+         */
+        public boolean isComposing() {
+            return PHASE_RELEASE_CANDIDATE_DRAFT.equals(phase);
+        }
+
+        /**
+         * Check if the release has been finalized and released.
+         *
+         * @return true if the release is in the release phase
+         */
+        public boolean isReleased() {
+            return PHASE_RELEASE.equals(phase);
+        }
+
+        /**
+         * Get a human-readable description of the phase.
+         *
+         * @return phase description
+         */
+        public String getPhaseDescription() {
+            if (phase == null) {
+                return "Unknown";
+            }
+            switch (phase) {
+                case PHASE_RELEASE_CANDIDATE_DRAFT:
+                    return "Release Candidate (Draft - Being Composed)";
+                case PHASE_RELEASE_CANDIDATE:
+                    return "Release Candidate (In Voting)";
+                case PHASE_RELEASE_PREVIEW:
+                    return "Release Preview";
+                case PHASE_RELEASE:
+                    return "Released";
+                default:
+                    return phase;
+            }
         }
     }
 }

@@ -42,6 +42,18 @@ import org.apache.maven.settings.crypto.SettingsDecryptionResult;
 public abstract class AbstractAtrMojo extends AbstractMojo {
 
     /**
+     * The project id for ATR upload.
+     */
+    @Parameter(property = "atr.project", required = true)
+    protected String project;
+
+    /**
+     * The version for ATR upload.
+     */
+    @Parameter(property = "atr.version", required = true)
+    protected String version;
+
+    /**
      * The ATR server URL.
      */
     @Parameter(property = "atr.url", defaultValue = "https://release-test.apache.org/")
@@ -77,7 +89,7 @@ public abstract class AbstractAtrMojo extends AbstractMojo {
      * Maven project.
      */
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
-    protected MavenProject project;
+    protected MavenProject mavenProject;
 
     /**
      * Maven session.
@@ -148,7 +160,7 @@ public abstract class AbstractAtrMojo extends AbstractMojo {
      */
     private boolean isExecutionRoot() {
         File executionRootDirectory = new File(session.getExecutionRootDirectory());
-        File projectBaseDir = project.getBasedir();
+        File projectBaseDir = mavenProject.getBasedir();
         return executionRootDirectory.equals(projectBaseDir);
     }
 

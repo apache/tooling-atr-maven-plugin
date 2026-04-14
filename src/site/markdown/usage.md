@@ -75,15 +75,23 @@ The typical use case is to integrate the ATR plugin into your `apache-release` p
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-atr-plugin</artifactId>
+            <configuration>
+              <project>${project.artifactId}</project>
+              <version>${project.version}</version>
+            </configuration>
             <executions>
+              <execution>
+                <id>atr-check-composing</id>
+                <goals>
+                  <goal>check-composing</goal>
+                </goals>
+              </execution>
               <execution>
                 <id>upload-to-atr</id>
                 <goals>
                   <goal>upload</goal>
                 </goals>
                 <configuration>
-                  <project>${project.artifactId}</project>
-                  <version>${project.version}</version>
                   <files>
                     <file>${project.build.directory}/${project.artifactId}-${project.version}-source-release.zip</file>
                     <file>${project.build.directory}/${project.artifactId}-${project.version}-source-release.zip.sha512</file>

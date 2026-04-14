@@ -31,20 +31,8 @@ import org.apache.maven.plugins.annotations.Parameter;
  *
  * @author Maven Team
  */
-@Mojo(name = "upload", requiresProject = true, defaultPhase = LifecyclePhase.DEPLOY, threadSafe = true)
+@Mojo(name = "upload", defaultPhase = LifecyclePhase.DEPLOY, threadSafe = true)
 public class UploadMojo extends AbstractAtrMojo {
-
-    /**
-     * The project id for ATR upload.
-     */
-    @Parameter(property = "atr.project", required = true)
-    private String project;
-
-    /**
-     * The version for ATR upload.
-     */
-    @Parameter(property = "atr.version", required = true)
-    private String version;
 
     /**
      * The files to upload to ATR.
