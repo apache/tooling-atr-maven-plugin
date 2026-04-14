@@ -165,6 +165,16 @@ public abstract class AbstractAtrMojo extends AbstractMojo {
     }
 
     /**
+     * Create an ATR client with JWT caching support.
+     *
+     * @return the ATR client
+     * @throws MojoExecutionException if client creation fails
+     */
+    protected AtrClient createAtrClient() throws MojoExecutionException {
+        return new AtrClient(url, getServer(), getPluginContext(), getLog());
+    }
+
+    /**
      * Execute the ATR-specific logic.
      *
      * @throws MojoExecutionException if an error occurs during execution

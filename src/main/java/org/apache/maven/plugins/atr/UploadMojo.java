@@ -58,7 +58,7 @@ public class UploadMojo extends AbstractAtrMojo {
 
         AtrClient client = null;
         if (!dryRun) {
-            client = new AtrClient(url, getServer(), getLog());
+            client = createAtrClient();
             client.ensureJwt();
         }
 

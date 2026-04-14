@@ -44,7 +44,7 @@ public class CheckComposingMojo extends AbstractAtrMojo {
             return;
         }
 
-        AtrClient client = new AtrClient(url, getServer(), getLog());
+        AtrClient client = createAtrClient();
         AtrClient.ReleaseInfo releaseInfo = client.checkVersion(project, version);
 
         if (releaseInfo == null) {

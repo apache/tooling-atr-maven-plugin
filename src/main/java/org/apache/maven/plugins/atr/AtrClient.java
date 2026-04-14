@@ -26,6 +26,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Base64;
+import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -41,8 +42,14 @@ import org.apache.maven.settings.Server;
  */
 public class AtrClient {
 
+    /**
+     * Key for caching JWT token in plugin context.
+     */
+    static final String JWT_CACHE_KEY = "atr.jwt.token";
+
     private final URL baseUrl;
     private final Server server;
+    private final Map<String, Object> pluginContext;
     private final Log log;
     private final ObjectMapper objectMapper;
     private String jwt;
@@ -52,22 +59,32 @@ public class AtrClient {
      *
      * @param baseUrl the base URL of the ATR server
      * @param server the Maven server configuration containing credentials
+     * @param pluginContext the plugin context for caching JWT across goals
      * @param log the Maven logger
      */
-    public AtrClient(URL baseUrl, Server server, Log log) {
+    public AtrClient(URL baseUrl, Server server, Map<String, Object> pluginContext, Log log) {
         this.baseUrl = baseUrl;
         this.server = server;
+        this.pluginContext = pluginContext;
         this.log = log;
         this.objectMapper = new ObjectMapper();
     }
 
     /**
-     * Create a JWT from the PAT.
+     * Create a JWT from the PAT, using cached JWT if available.
      *
      * @throws MojoExecutionException if JWT creation fails
      */
     void ensureJwt() throws MojoExecutionException {
         if (jwt != null) {
+            return;
+        }
+
+        // Check if JWT is cached in plugin context
+        String cachedJwt = (String) pluginContext.get(JWT_CACHE_KEY);
+        if (cachedJwt != null) {
+            jwt = cachedJwt;
+            log.debug("Using cached JWT from plugin context");
             return;
         }
 
@@ -93,6 +110,10 @@ public class AtrClient {
                 JwtCreateResponse response = objectMapper.readValue(conn.getInputStream(), JwtCreateResponse.class);
                 jwt = response.getJwt();
                 log.debug("JWT created successfully");
+
+                // Cache JWT in plugin context for reuse across goals
+                pluginContext.put(JWT_CACHE_KEY, jwt);
+                log.debug("JWT cached in plugin context");
             } else {
                 String errorResponse = readErrorResponse(conn.getErrorStream());
                 throw new MojoExecutionException("Failed to create JWT: HTTP " + responseCode + " - " + errorResponse);
