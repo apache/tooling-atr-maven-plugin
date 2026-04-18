@@ -77,4 +77,51 @@ under the License.
       <version>2.0</version>
     </dependency>
   </dependencies>
+
+  <profiles>
+    <profile>
+      <!-- proof of concept of how this can be integrated in ASF parent POM https://maven.apache.org/pom/asf/ in the future, as an optional profile -->
+      <id>push-to-atr</id>
+      <!--
+        mvn -Papache-release,push-to-atr deploy
+        or
+        mvn release:perform -Ppush-to-atr during release
+       -->
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-atr-plugin</artifactId>
+            <version>${project.version}</version>
+            <configuration>
+              <project>${project.artifactId}</project>
+              <!-- https://release-test.apache.org/projects/maven-atr-plugin -->
+              <version>${project.version}</version>
+            </configuration>
+            <executions>
+              <execution>
+                <id>atr-check-composing</id>
+                <goals>
+                  <goal>check-composing</goal>
+                </goals>
+              </execution>
+              <execution>
+                <id>upload-to-atr</id>
+                <goals>
+                  <goal>upload</goal>
+                </goals>
+                <configuration>
+                  <files>
+                    <file>${project.build.directory}/${project.artifactId}-${project.version}-source-release.zip</file>
+                    <file>${project.build.directory}/${project.artifactId}-${project.version}-source-release.zip.sha512</file>
+                    <file>${project.build.directory}/${project.artifactId}-${project.version}-source-release.zip.asc</file>
+                  </files>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
