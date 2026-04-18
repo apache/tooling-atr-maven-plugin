@@ -105,8 +105,10 @@ public abstract class AbstractAtrMojo extends AbstractMojo {
     protected Server getServer() throws MojoExecutionException {
         Server server = session.getSettings().getServer(serverId);
         if (server == null) {
-            throw new MojoExecutionException("Server '" + serverId + "' not found in settings.xml. "
-                    + "Please configure it with your ASF user ID as username and PAT as password.");
+            getLog().error("Missing permissions for '" + serverId + "' server in ~/.m2/settings.xml");
+            throw new MojoExecutionException(
+                    "<server><id>" + serverId + "</id> not found in ~/.m2/settings.xml. "
+                            + "Please configure it with your ASF user ID as <username> and ATR Personal Access Token as <password> (encrypted if enabled).");
         }
 
         DefaultSettingsDecryptionRequest request = new DefaultSettingsDecryptionRequest(server);
@@ -119,7 +121,7 @@ public abstract class AbstractAtrMojo extends AbstractMojo {
         server = result.getServer();
         if (server.getUsername() == null || server.getPassword() == null) {
             throw new MojoExecutionException("Server '" + serverId
-                    + "' must have username (ASF user ID) and password (PAT) configured in settings.xml.");
+                    + "' must have username (ASF user ID) and password (ATR PAT) configured in settings.xml.");
         }
 
         return server;

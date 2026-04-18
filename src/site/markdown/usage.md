@@ -29,7 +29,7 @@ The Maven ATR Plugin uses Maven's standard authentication mechanism. Configure y
     <server>
       <id>apache.atr</id>
       <username>your-asf-id</username>
-      <password>your-personal-access-token</password>
+      <password>your-personal-access-token (encrypted)</password>
     </server>
   </servers>
 </settings>
@@ -37,7 +37,7 @@ The Maven ATR Plugin uses Maven's standard authentication mechanism. Configure y
 
 The username should be your ASF user ID and the password should be your Personal Access Token (PAT) from the ATR service.
 
-For security, you can encrypt your password using [Maven's password encryption](https://maven.apache.org/guides/mini/guide-encryption.html).
+For security, you should encrypt your password using [Maven's password encryption](https://maven.apache.org/guides/mini/guide-encryption.html).
 
 ## Basic Upload
 

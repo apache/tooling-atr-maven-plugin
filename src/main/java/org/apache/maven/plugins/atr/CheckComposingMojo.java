@@ -37,7 +37,7 @@ public class CheckComposingMojo extends AbstractAtrMojo {
             getLog().info("DRY RUN: Simulating ATR version check (no actual API call will be made)");
         }
 
-        getLog().info("Checking project release in ATR: " + project + " version " + version);
+        getLog().info("Checking project release in ATR: " + url + "projects/" + project + " version " + version);
 
         if (dryRun) {
             getLog().info("DRY RUN: Would check version at " + url + "api/release/get/" + project + "/" + version);

@@ -153,8 +153,7 @@ public class AtrClient {
                 return null;
             } else {
                 String errorResponse = readErrorResponse(conn.getErrorStream());
-                throw new MojoExecutionException(
-                        "Failed to get release: HTTP " + responseCode + " - " + errorResponse);
+                throw new MojoExecutionException("Failed to get release: HTTP " + responseCode + " - " + errorResponse);
             }
         } catch (IOException e) {
             throw new MojoExecutionException("Failed to get release in ATR: " + project + " " + version, e);

@@ -25,6 +25,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.codehaus.plexus.util.FileUtils;
 
 /**
  * Upload Apache distribution artifacts to ATR (Apache Test Release) compose space before vote.
@@ -51,10 +52,8 @@ public class UploadMojo extends AbstractAtrMojo {
         if (dryRun) {
             getLog().info("DRY RUN: Simulating ATR upload (no actual upload will occur)");
         } else {
-            getLog().info("Uploading artifacts to ATR...");
+            getLog().info("Uploading " + files.length + " files to ATR " + url + "compose/" + project + "/" + version);
         }
-        getLog().info("Composing release " + url + "compose/" + project + "/" + version);
-        getLog().info("Files: " + files.length);
 
         AtrClient client = createAtrClient();
 
@@ -77,7 +76,8 @@ public class UploadMojo extends AbstractAtrMojo {
             return;
         }
 
-        getLog().info("Uploading: " + file.getFileName() + " to " + getAtrFileUrl(file));
+        getLog().info(">>> " + file.getFileName() + " ("
+                + FileUtils.byteCountToDisplaySize((int) file.toFile().length()) + ") to " + getAtrFileUrl(file));
 
         // Build target path on ATR space
         String target =
@@ -86,7 +86,7 @@ public class UploadMojo extends AbstractAtrMojo {
         // Upload using ATR client
         String revisionNumber = client.uploadFile(project, version, target, file);
 
-        getLog().info("Upload successful. Revision: " + revisionNumber);
+        getLog().info("    upload successful, revision: " + revisionNumber);
     }
 
     /**
