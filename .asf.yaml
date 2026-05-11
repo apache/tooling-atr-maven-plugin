@@ -17,7 +17,7 @@
 
 github:
   description: "Apache Maven ATR Plugin"
-  homepage: https://maven.apache.org/plugins/maven-atr-plugin/
+  homepage: https://tooling.apache.org/
   labels:
     - maven
     - build-management
@@ -33,6 +33,6 @@ github:
     rebase: true
 
 notifications:
-  commits: commits@maven.apache.org
-  issues: issues@maven.apache.org
-  pullrequests: notifications@maven.apache.org
+  commits: commits@tooling.apache.org
+  issues: dev@tooling.apache.org
+  pullrequests: dev@tooling.apache.org
