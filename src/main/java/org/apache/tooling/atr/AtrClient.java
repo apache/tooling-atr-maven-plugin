@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.maven.plugins.atr;
+package org.apache.tooling.atr;
 
 import java.io.IOException;
 import java.io.InputStream;

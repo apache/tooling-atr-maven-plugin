@@ -17,9 +17,9 @@ specific language governing permissions and limitations
 under the License.
 -->
 
-# Apache Maven ATR Plugin
+# Apache Tooling ATR Maven Plugin
 
-The Maven ATR Plugin is used to upload Apache release artifacts to [ATR (Apache Trusted Releases)][introduction-to-atr] before starting a vote.
+The ATR Maven Plugin is used to upload Apache release artifacts to [ATR (Apache Trusted Releases)][introduction-to-atr] before starting a vote.
 
 ## Goals Overview
 
@@ -29,7 +29,7 @@ The ATR Plugin has one goal:
 
 ## Usage
 
-General instructions on how to use the Maven ATR Plugin can be found on the [usage page](./usage.html).
+General instructions on how to use the ATR Maven Plugin can be found on the [usage page](./usage.html).
 
 In case you still have questions regarding the plugin's usage, please feel free to contact the [user mailing list](./mailing-lists.html). The posts to the mailing list are archived and could already contain the answer to your question as part of an older thread. Hence, it is also worth browsing/searching the [mail archive](./mailing-lists.html).
 

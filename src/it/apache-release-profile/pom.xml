@@ -26,12 +26,12 @@ under the License.
     <version>37</version>
   </parent>
 
-  <groupId>org.apache.maven.its.atr</groupId>
-  <artifactId>maven-atr-test-apache-release</artifactId>
+  <groupId>org.apache.tooling.its.atr</groupId>
+  <artifactId>tooling-atr-test-apache-release</artifactId>
   <version>1.0-SNAPSHOT</version>
 
   <name>ATR Plugin IT - Apache Release Profile</name>
-  <description>Integration test for maven-atr-plugin with apache-release profile</description>
+  <description>Integration test for atr-mavenplugin with apache-release profile</description>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -43,8 +43,8 @@ under the License.
     <pluginManagement>
       <plugins>
         <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-atr-plugin</artifactId>
+          <groupId>org.apache.tooling</groupId>
+          <artifactId>atr-maven-plugin</artifactId>
           <version>@project.version@</version>
         </plugin>
       </plugins>
@@ -57,8 +57,8 @@ under the License.
       <build>
         <plugins>
           <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-atr-plugin</artifactId>
+            <groupId>org.apache.tooling</groupId>
+            <artifactId>atr-maven-plugin</artifactId>
             <configuration>
               <dryRun>true</dryRun>
               <project>${project.artifactId}</project>
