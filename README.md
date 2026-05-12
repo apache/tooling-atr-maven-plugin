@@ -17,10 +17,10 @@ specific language governing permissions and limitations
 under the License.
 -->
 
-# Maven ATR Plugin
+# Tooling ATR Maven Plugin
 
-Studying ATR integration for Maven.
+ATR integration for Maven.
 
-It starts with a Maven plugin to [upload Apache distribution artifacts](https://release-test.apache.org/tutorial) to ATR before vote, like [`atr upload` CLI](https://github.com/apache/tooling-releases-client/blob/main/COMMANDS.md#atr-upload).
+It provides a Maven plugin with and [`atr:upload` goal](src/site/usage.md) to [upload Apache distribution artifacts](https://release-test.apache.org/tutorial) to ATR before vote, like [`atr upload` CLI](https://github.com/apache/tooling-releases-client/blob/main/COMMANDS.md#atr-upload).
 
 This can be triggered during `mvn deploy` in an `atr` profile along `apache-release` one: see IT `mvn -Prun-its verify` for demo.

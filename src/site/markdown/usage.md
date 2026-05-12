@@ -21,7 +21,7 @@ under the License.
 
 ## Configuring Credentials
 
-The Maven ATR Plugin uses Maven's standard authentication mechanism. Configure your ATR credentials in `~/.m2/settings.xml`:
+The ATR Maven Plugin uses Maven's standard authentication mechanism. Configure your ATR credentials in `~/.m2/settings.xml`:
 
 ```xml
 <settings>
@@ -44,7 +44,7 @@ For security, you should encrypt your password using [Maven's password encryptio
 To upload release artifacts to ATR:
 
 ```
-mvn org.apache.maven.plugins:maven-atr-plugin:upload \
+mvn org.apache.tooling:atr-maven-plugin:upload \
   -Datr.project=maven \
   -Datr.version=4.0.0 \
   -Datr.files=apache-maven-4.0.0-src.tar.gz,apache-maven-4.0.0-src.tar.gz.sha512
@@ -52,7 +52,7 @@ mvn org.apache.maven.plugins:maven-atr-plugin:upload \
 
 ## Integration with Release Profile
 
-The typical use case is to integrate the ATR plugin into your `apache-release` profile:
+The typical use case is to integrate the ATR plugin into a `push-to-atr` profile that will be used optionally with `apache-release` profile:
 
 ```xml
 <project>
@@ -60,8 +60,8 @@ The typical use case is to integrate the ATR plugin into your `apache-release` p
   <build>
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-atr-plugin</artifactId>
+        <groupId>org.apache.tooling</groupId>
+        <artifactId>atr-maven-plugin</artifactId>
         <version>1.0.0-beta-1-SNAPSHOT</version>
       </plugin>
     </plugins>
@@ -69,12 +69,12 @@ The typical use case is to integrate the ATR plugin into your `apache-release` p
 
   <profiles>
     <profile>
-      <id>apache-release</id>
+      <id>push-to-atr</id>
       <build>
         <plugins>
           <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-atr-plugin</artifactId>
+            <groupId>org.apache.tooling</groupId>
+            <artifactId>atr-maven-plugin</artifactId>
             <configuration>
               <project>${project.artifactId}</project>
               <version>${project.version}</version>
@@ -111,7 +111,7 @@ The typical use case is to integrate the ATR plugin into your `apache-release` p
 Then during the release process:
 
 ```
-mvn clean deploy -Papache-release
+mvn clean deploy -Papache-release,push-to-atr
 ```
 
 ## Directory Organization

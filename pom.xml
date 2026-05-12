@@ -27,16 +27,28 @@ under the License.
     <relativePath />
   </parent>
 
-  <artifactId>maven-atr-plugin</artifactId>
+  <groupId>org.apache.tooling</groupId>
+  <artifactId>atr-maven-plugin</artifactId>
   <version>1.0.0-beta-1-SNAPSHOT</version>
   <packaging>maven-plugin</packaging>
 
-  <name>Apache Maven ATR Plugin</name>
+  <name>Apache Tooling ATR Maven Plugin</name>
   <description>Maven plugin for ATR (Apache Test Release) integration to upload Apache distribution artifacts.</description>
 
   <prerequisites>
     <maven>3.9.0</maven>
   </prerequisites>
+
+  <scm>
+    <connection>scm:git:https://gitbox.apache.org/repos/asf/tooling-atr-maven-plugin.git</connection>
+    <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/tooling-atr-maven-plugin.git</developerConnection>
+    <tag>main</tag>
+    <url>https://github.com/apache/tooling-atr-maven-plugin/tree/${project.scm.tag}</url>
+  </scm>
+  <issueManagement>
+    <system>GitHub Issues</system>
+    <url>https://github.com/apache/tooling-atr-maven-plugin/issues</url>
+  </issueManagement>
 
   <properties>
     <mavenVersion>3.9.15</mavenVersion>
@@ -102,8 +114,8 @@ under the License.
       <build>
         <plugins>
           <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-atr-plugin</artifactId>
+            <groupId>org.apache.tooling</groupId>
+            <artifactId>atr-maven-plugin</artifactId>
             <version>${project.version}</version>
             <configuration>
               <project>${project.artifactId}</project>
