@@ -43,8 +43,8 @@ under the License.
     <pluginManagement>
       <plugins>
         <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-atr-plugin</artifactId>
+          <groupId>org.apache.tooling</groupId>
+          <artifactId>atr-maven-plugin</artifactId>
           <version>@project.version@</version>
         </plugin>
       </plugins>
@@ -57,8 +57,8 @@ under the License.
       <build>
         <plugins>
           <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-atr-plugin</artifactId>
+            <groupId>org.apache.tooling</groupId>
+            <artifactId>atr-maven-plugin</artifactId>
             <configuration>
               <dryRun>true</dryRun>
               <project>${project.artifactId}</project>

@@ -27,7 +27,8 @@ under the License.
     <relativePath />
   </parent>
 
-  <artifactId>maven-atr-plugin</artifactId>
+  <groupId>org.apache.tooling</groupId>
+  <artifactId>atr-maven-plugin</artifactId>
   <version>1.0.0-beta-1-SNAPSHOT</version>
   <packaging>maven-plugin</packaging>
 
