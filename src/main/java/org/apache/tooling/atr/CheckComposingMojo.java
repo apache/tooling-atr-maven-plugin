@@ -18,10 +18,15 @@
  */
 package org.apache.tooling.atr;
 
-import org.apache.maven.plugin.MojoExecutionException;
+import javax.inject.Inject;
+
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.project.MavenProject;
+import org.apache.tooling.atr.client.AtrClient;
+import org.apache.tooling.atr.client.AtrClientException;
+import org.apache.tooling.atr.client.AtrClientFactory;
 
 /**
  * Check if a version exists in ATR and is being composed (in draft phase).
@@ -31,8 +36,13 @@ import org.apache.maven.plugins.annotations.Mojo;
 @Mojo(name = "check-composing", defaultPhase = LifecyclePhase.INITIALIZE, threadSafe = true)
 public class CheckComposingMojo extends AbstractAtrMojo {
 
+    @Inject
+    CheckComposingMojo(MavenProject mavenProject, AtrClientFactory atrClientFactory) {
+        super(mavenProject, atrClientFactory);
+    }
+
     @Override
-    protected void atrExecute() throws MojoExecutionException, MojoFailureException {
+    protected void atrExecute() throws MojoFailureException, AtrClientException {
         if (dryRun) {
             getLog().info("DRY RUN: Simulating ATR version check (no actual API call will be made)");
         }

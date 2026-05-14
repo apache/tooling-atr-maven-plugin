@@ -18,20 +18,16 @@
  */
 package org.apache.tooling.atr;
 
-import java.io.File;
 import java.net.URL;
 
-import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.settings.Server;
-import org.apache.maven.settings.crypto.DefaultSettingsDecryptionRequest;
-import org.apache.maven.settings.crypto.SettingsDecrypter;
-import org.apache.maven.settings.crypto.SettingsDecryptionResult;
+import org.apache.tooling.atr.client.AtrClient;
+import org.apache.tooling.atr.client.AtrClientException;
+import org.apache.tooling.atr.client.AtrClientFactory;
 
 /**
  * Abstract base class for ATR Mojos.
@@ -84,47 +80,13 @@ public abstract class AbstractAtrMojo extends AbstractMojo {
     @Parameter(property = "atr.runOnlyAtExecutionRoot", defaultValue = "false")
     protected boolean runOnlyAtExecutionRoot;
 
-    @Component
-    protected MavenProject mavenProject;
+    private final MavenProject mavenProject;
 
-    @Component
-    protected MavenSession session;
+    private final AtrClientFactory atrClientFactory;
 
-    /**
-     * Settings decrypter component.
-     */
-    @Component
-    protected SettingsDecrypter settingsDecrypter;
-
-    /**
-     * Get and decrypt the server configuration.
-     *
-     * @return the decrypted server
-     * @throws MojoExecutionException if server cannot be found or decrypted
-     */
-    protected Server getServer() throws MojoExecutionException {
-        Server server = session.getSettings().getServer(serverId);
-        if (server == null) {
-            getLog().error("Missing permissions for '" + serverId + "' server in ~/.m2/settings.xml");
-            throw new MojoExecutionException(
-                    "<server><id>" + serverId + "</id> not found in ~/.m2/settings.xml. "
-                            + "Please configure it with your ASF user ID as <username> and ATR Personal Access Token as <password> (encrypted if enabled).");
-        }
-
-        DefaultSettingsDecryptionRequest request = new DefaultSettingsDecryptionRequest(server);
-        SettingsDecryptionResult result = settingsDecrypter.decrypt(request);
-
-        if (!result.getProblems().isEmpty()) {
-            getLog().warn("Problems decrypting server credentials: " + result.getProblems());
-        }
-
-        server = result.getServer();
-        if (server.getUsername() == null || server.getPassword() == null) {
-            throw new MojoExecutionException("Server '" + serverId
-                    + "' must have username (ASF user ID) and password (ATR PAT) configured in settings.xml.");
-        }
-
-        return server;
+    protected AbstractAtrMojo(MavenProject mavenProject, AtrClientFactory atrClientFactory) {
+        this.mavenProject = mavenProject;
+        this.atrClientFactory = atrClientFactory;
     }
 
     @Override
@@ -134,33 +96,26 @@ public abstract class AbstractAtrMojo extends AbstractMojo {
             return;
         }
 
-        if (runOnlyAtExecutionRoot && !isExecutionRoot()) {
+        if (runOnlyAtExecutionRoot && !mavenProject.isExecutionRoot()) {
             getLog().info("Skipping ATR plugin execution (not execution root)");
             return;
         }
 
-        atrExecute();
-    }
-
-    /**
-     * Check if the current project is the execution root.
-     *
-     * @return true if this is the execution root
-     */
-    private boolean isExecutionRoot() {
-        File executionRootDirectory = new File(session.getExecutionRootDirectory());
-        File projectBaseDir = mavenProject.getBasedir();
-        return executionRootDirectory.equals(projectBaseDir);
+        try {
+            atrExecute();
+        } catch (AtrClientException e) {
+            throw new MojoExecutionException(e);
+        }
     }
 
     /**
      * Create an ATR client with JWT caching support.
      *
      * @return the ATR client
-     * @throws MojoExecutionException if client creation fails
+     * @throws AtrClientException if client creation fails
      */
-    protected AtrClient createAtrClient() throws MojoExecutionException {
-        return new AtrClient(url, getServer(), getPluginContext(), getLog());
+    protected AtrClient createAtrClient() throws AtrClientException {
+        return atrClientFactory.createAtrClient(url, serverId);
     }
 
     /**
@@ -168,6 +123,7 @@ public abstract class AbstractAtrMojo extends AbstractMojo {
      *
      * @throws MojoExecutionException if an error occurs during execution
      * @throws MojoFailureException if a failure occurs during execution
+     * @throws AtrClientException if a failure in the ATR client occurs
      */
-    protected abstract void atrExecute() throws MojoExecutionException, MojoFailureException;
+    protected abstract void atrExecute() throws MojoExecutionException, MojoFailureException, AtrClientException;
 }

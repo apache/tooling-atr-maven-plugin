@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tooling.atr;
+package org.apache.tooling.atr.client;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,14 +26,13 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Base64;
-import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.settings.Server;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Client for interacting with the ATR (Apache Test Release) API.
@@ -42,55 +41,46 @@ import org.apache.maven.settings.Server;
  */
 public class AtrClient {
 
-    /**
-     * Key for caching JWT token in plugin context.
-     */
-    static final String JWT_CACHE_KEY = "atr.jwt.token";
+    private final Logger logger = LoggerFactory.getLogger(AtrClient.class);
 
     private final URL baseUrl;
-    private final Server server;
-    private final Map<String, Object> pluginContext;
-    private final Log log;
+
+    private final String username;
+
+    private final String password;
+
+    private final AtomicReference<String> jwtCache;
+
     private final ObjectMapper objectMapper;
-    private String jwt;
 
     /**
      * Create a new ATR client.
      *
      * @param baseUrl the base URL of the ATR server
-     * @param server the Maven server configuration containing credentials
-     * @param pluginContext the plugin context for caching JWT across goals
-     * @param log the Maven logger
+     * @param jwtCache the reference for caching JWT across goals
      */
-    public AtrClient(URL baseUrl, Server server, Map<String, Object> pluginContext, Log log) {
+    AtrClient(URL baseUrl, String username, String password, AtomicReference<String> jwtCache) {
         this.baseUrl = baseUrl;
-        this.server = server;
-        this.pluginContext = pluginContext;
-        this.log = log;
+        this.username = username;
+        this.password = password;
+        this.jwtCache = jwtCache;
         this.objectMapper = new ObjectMapper();
     }
 
     /**
      * Create a JWT from the PAT, using cached JWT if available.
      *
-     * @throws MojoExecutionException if JWT creation fails
+     * @throws AtrClientException if JWT creation fails
      */
-    void ensureJwt() throws MojoExecutionException {
-        if (jwt != null) {
-            return;
-        }
-
-        // Check if JWT is cached in plugin context
-        String cachedJwt = (String) pluginContext.get(JWT_CACHE_KEY);
-        if (cachedJwt != null) {
-            jwt = cachedJwt;
-            log.debug("Using cached JWT from plugin context");
+    void ensureJwt() throws AtrClientException {
+        if (jwtCache.get() != null) {
+            logger.debug("Using cached JWT");
             return;
         }
 
         try {
             // Create JWT request
-            JwtCreateRequest request = new JwtCreateRequest(server.getUsername(), server.getPassword());
+            JwtCreateRequest request = new JwtCreateRequest(username, password);
 
             // Create connection
             URL jwtUrl = new URL(baseUrl, "api/jwt/create");
@@ -108,18 +98,18 @@ public class AtrClient {
             int responseCode = conn.getResponseCode();
             if (responseCode == HttpURLConnection.HTTP_OK || responseCode == HttpURLConnection.HTTP_CREATED) {
                 JwtCreateResponse response = objectMapper.readValue(conn.getInputStream(), JwtCreateResponse.class);
-                jwt = response.getJwt();
-                log.debug("JWT created successfully");
+                String jwt = response.getJwt();
+                logger.debug("JWT created successfully");
 
-                // Cache JWT in plugin context for reuse across goals
-                pluginContext.put(JWT_CACHE_KEY, jwt);
-                log.debug("JWT cached in plugin context");
+                // Cache JWT for reuse across goals
+                jwtCache.set(jwt);
+                logger.debug("JWT cached");
             } else {
                 String errorResponse = readErrorResponse(conn.getErrorStream());
-                throw new MojoExecutionException("Failed to create JWT: HTTP " + responseCode + " - " + errorResponse);
+                throw new AtrClientException("Failed to create JWT: HTTP " + responseCode + " - " + errorResponse);
             }
         } catch (IOException e) {
-            throw new MojoExecutionException("Failed to create JWT from PAT", e);
+            throw new AtrClientException("Failed to create JWT from PAT", e);
         }
     }
 
@@ -129,9 +119,9 @@ public class AtrClient {
      * @param project the project id
      * @param version the version
      * @return the release information, or null if the version does not exist
-     * @throws MojoExecutionException if the check fails
+     * @throws AtrClientException if the check fails
      */
-    public ReleaseInfo getRelease(String project, String version) throws MojoExecutionException {
+    public ReleaseInfo getRelease(String project, String version) throws AtrClientException {
         // Ensure we have a valid JWT
         ensureJwt();
 
@@ -140,23 +130,23 @@ public class AtrClient {
             URL checkUrl = new URL(baseUrl, "api/release/get/" + project + "/" + version);
             HttpURLConnection conn = (HttpURLConnection) checkUrl.openConnection();
             conn.setRequestMethod("GET");
-            conn.setRequestProperty("Authorization", "Bearer " + jwt);
+            conn.setRequestProperty("Authorization", "Bearer " + jwtCache.get());
 
             // Check response
             int responseCode = conn.getResponseCode();
             if (responseCode == HttpURLConnection.HTTP_OK) {
                 ReleaseGetResponse response = objectMapper.readValue(conn.getInputStream(), ReleaseGetResponse.class);
-                log.debug("Get release successful: " + objectMapper.writeValueAsString(response));
+                logger.debug("Get release successful: " + objectMapper.writeValueAsString(response));
                 return response.getRelease();
             } else if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
-                log.debug("Release does not exist: " + project + " " + version);
+                logger.debug("Release does not exist: " + project + " " + version);
                 return null;
             } else {
                 String errorResponse = readErrorResponse(conn.getErrorStream());
-                throw new MojoExecutionException("Failed to get release: HTTP " + responseCode + " - " + errorResponse);
+                throw new AtrClientException("Failed to get release: HTTP " + responseCode + " - " + errorResponse);
             }
         } catch (IOException e) {
-            throw new MojoExecutionException("Failed to get release in ATR: " + project + " " + version, e);
+            throw new AtrClientException("Failed to get release in ATR: " + project + " " + version, e);
         }
     }
 
@@ -168,9 +158,9 @@ public class AtrClient {
      * @param path the relative path within the release (e.g., "artifactId-version-source-release.zip")
      * @param file the file to upload
      * @return the revision number
-     * @throws MojoExecutionException if the upload fails
+     * @throws AtrClientException if the upload fails
      */
-    public String uploadFile(String project, String version, String path, Path file) throws MojoExecutionException {
+    public String uploadFile(String project, String version, String path, Path file) throws AtrClientException {
         // Ensure we have a valid JWT
         ensureJwt();
 
@@ -187,7 +177,7 @@ public class AtrClient {
             HttpURLConnection conn = (HttpURLConnection) uploadUrl.openConnection();
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json");
-            conn.setRequestProperty("Authorization", "Bearer " + jwt);
+            conn.setRequestProperty("Authorization", "Bearer " + jwtCache.get());
             conn.setDoOutput(true);
 
             // Send request
@@ -200,14 +190,14 @@ public class AtrClient {
             if (responseCode == HttpURLConnection.HTTP_CREATED || responseCode == HttpURLConnection.HTTP_ACCEPTED) {
                 ReleaseUploadResponse response =
                         objectMapper.readValue(conn.getInputStream(), ReleaseUploadResponse.class);
-                log.debug("Upload successful: " + objectMapper.writeValueAsString(response));
+                logger.debug("Upload successful: " + objectMapper.writeValueAsString(response));
                 return response.getRevision() != null ? response.getRevision().getNumber() : "unknown";
             } else {
                 String errorResponse = readErrorResponse(conn.getErrorStream());
-                throw new MojoExecutionException("Failed to upload file: HTTP " + responseCode + " - " + errorResponse);
+                throw new AtrClientException("Failed to upload file: HTTP " + responseCode + " - " + errorResponse);
             }
         } catch (IOException e) {
-            throw new MojoExecutionException("Failed to upload file to ATR: " + file, e);
+            throw new AtrClientException("Failed to upload file to ATR: " + file, e);
         }
     }
 
