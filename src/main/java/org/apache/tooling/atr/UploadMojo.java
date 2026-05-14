@@ -18,13 +18,17 @@
  */
 package org.apache.tooling.atr;
 
+import javax.inject.Inject;
+
 import java.nio.file.Path;
 
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.MavenProject;
+import org.apache.tooling.atr.client.AtrClient;
+import org.apache.tooling.atr.client.AtrClientException;
+import org.apache.tooling.atr.client.AtrClientFactory;
 import org.codehaus.plexus.util.FileUtils;
 
 /**
@@ -47,8 +51,13 @@ public class UploadMojo extends AbstractAtrMojo {
     @Parameter(property = "atr.directory")
     private String directory;
 
+    @Inject
+    UploadMojo(MavenProject mavenProject, AtrClientFactory atrClientFactory) {
+        super(mavenProject, atrClientFactory);
+    }
+
     @Override
-    protected void atrExecute() throws MojoExecutionException, MojoFailureException {
+    protected void atrExecute() throws AtrClientException {
         if (dryRun) {
             getLog().info("DRY RUN: Simulating ATR upload (no actual upload will occur)");
         } else {
@@ -67,10 +76,8 @@ public class UploadMojo extends AbstractAtrMojo {
      *
      * @param client the ATR client to use for upload
      * @param file the file to upload
-     * @throws MojoExecutionException if an error occurs during upload
-     * @throws MojoFailureException if the upload fails
      */
-    private void upload(AtrClient client, Path file) throws MojoExecutionException, MojoFailureException {
+    private void upload(AtrClient client, Path file) throws AtrClientException {
         if (dryRun) {
             getLog().info("DRY RUN: Would upload: " + file.getFileName() + " to " + getAtrFileUrl(file));
             return;
