@@ -32,6 +32,9 @@ github:
     merge: false
     rebase: true
 
+  ghp_branch: gh-pages
+  ghp_path: /
+
   rulesets:
     - name: "Default Branch Protection"
       type: branch
@@ -40,6 +43,7 @@ github:
           - "~DEFAULT_BRANCH"
           - "release/*"
           - "rel/*"
+          - "gh-pages"
         excludes: []
       bypass_teams:
         - root
