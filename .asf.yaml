@@ -49,6 +49,7 @@ github:
         - root
       restrict_deletion: true
       restrict_force_push: true
+
 notifications:
   commits: commits@tooling.apache.org
   issues: dev@tooling.apache.org
