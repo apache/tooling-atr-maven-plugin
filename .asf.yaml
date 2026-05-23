@@ -28,7 +28,7 @@ github:
     issues: true
     projects: false
   enabled_merge_buttons:
-    squash: false
+    squash: true
     merge: false
     rebase: true
 
