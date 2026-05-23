@@ -35,7 +35,7 @@ under the License.
   <name>Apache Tooling ATR Maven Plugin</name>
   <description>Maven plugin for ATR (Apache Test Release) integration to upload Apache distribution artifacts.</description>
 
-  <url>${topSiteURL}</url>
+  <url>https://apache.github.io/tooling-atr-maven-plugin</url>
 
   <developers>
     <developer>
@@ -87,7 +87,7 @@ under the License.
     <site>
       <id>tooling-docs</id>
       <!-- target repository for documentation -->
-      <url>${targetSiteRepo}</url>
+      <url>scm:git:https://github.com/apache/tooling-atr-maven-plugin.git</url>
     </site>
   </distributionManagement>
 
@@ -107,10 +107,6 @@ under the License.
 
     <!-- disable publishing be default -->
     <scmpublish.dryRun>true</scmpublish.dryRun>
-    <topSiteURL>https://tooling.apache.org/atr/maven/</topSiteURL>
-    <targetSiteRepo>scm:git:https://github.com/apache/tooling-docs.git</targetSiteRepo>
-    <targetSiteRepoBranch>main</targetSiteRepoBranch>
-    <tagetSiteRepoSubDirectory>content/pages/atr/maven</tagetSiteRepoSubDirectory>
 
     <project.build.outputTimestamp>2026-05-17T23:00:00Z</project.build.outputTimestamp>
   </properties>
@@ -245,9 +241,9 @@ under the License.
           <dryRun>${scmpublish.dryRun}</dryRun>
           <tryUpdate>true</tryUpdate>
           <!-- repository branch -->
-          <scmBranch>${targetSiteRepoBranch}</scmBranch>
+          <scmBranch>gh-pages</scmBranch>
           <!-- target directory for documentation -->
-          <subDirectory>${tagetSiteRepoSubDirectory}</subDirectory>
+          <subDirectory>/</subDirectory>
         </configuration>
         <executions>
           <execution>
@@ -355,15 +351,6 @@ under the License.
   </reporting>
 
   <profiles>
-    <profile>
-      <id>gh-pages</id>
-      <properties>
-        <topSiteURL>https://apache.github.io/tooling-atr-maven-plugin</topSiteURL>
-        <targetSiteRepo>scm:git:https://github.com/apache/tooling-atr-maven-plugin.git</targetSiteRepo>
-        <targetSiteRepoBranch>gh-pages</targetSiteRepoBranch>
-        <tagetSiteRepoSubDirectory>/</tagetSiteRepoSubDirectory>
-      </properties>
-    </profile>
     <profile>
       <id>run-its</id>
       <build>
