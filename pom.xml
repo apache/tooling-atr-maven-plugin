@@ -44,6 +44,13 @@ under the License.
       <email>sjaranowski@apache.org</email>
       <timezone>Europe/Warsaw</timezone>
     </developer>
+    <developer>
+      <id>hboutemy</id>
+      <name>Hervé Boutemy</name>
+      <email>hboutemy@apache.org</email>
+      <organization>ASF</organization>
+      <timezone>Europe/Paris</timezone>
+    </developer>
   </developers>
 
   <mailingLists>

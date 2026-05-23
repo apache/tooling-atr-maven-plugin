@@ -23,8 +23,9 @@ The ATR Maven Plugin is used to upload Apache release artifacts to [ATR (Apache 
 
 ## Goals Overview
 
-The ATR Plugin has one goal:
+The ATR Plugin has 2 goals:
 
+* [atr:check-composing](./check-composing-mojo.html) checks if a version exists in ATR and is being composed (in draft phase),
 * [atr:upload](./upload-mojo.html) uploads distribution artifacts to ATR compose space.
 
 ## Usage
