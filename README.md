@@ -31,5 +31,5 @@ by command:
 
 ```bash
 
-mvn clean siite-deploy -Dscmpublish.dryRun=fasle
+mvn clean siite-deploy
 ```

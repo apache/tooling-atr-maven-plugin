@@ -105,9 +105,6 @@ under the License.
     <invoker.streamLogsOnFailures>true</invoker.streamLogsOnFailures>
     <invoker.rerunFailingTestsCount>1</invoker.rerunFailingTestsCount>
 
-    <!-- disable publishing be default -->
-    <scmpublish.dryRun>true</scmpublish.dryRun>
-
     <project.build.outputTimestamp>2026-05-17T23:00:00Z</project.build.outputTimestamp>
   </properties>
 
@@ -238,7 +235,6 @@ under the License.
         <artifactId>maven-scm-publish-plugin</artifactId>
         <configuration>
           <content>target/site</content>
-          <dryRun>${scmpublish.dryRun}</dryRun>
           <tryUpdate>true</tryUpdate>
           <!-- repository branch -->
           <scmBranch>gh-pages</scmBranch>
