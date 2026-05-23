@@ -24,3 +24,12 @@ ATR integration for Maven.
 It provides a Maven plugin with an [`atr:upload` goal](src/site/markdown/usage.md) to [upload Apache distribution artifacts](https://release-test.apache.org/tutorial) to ATR before vote, like [`atr upload` CLI](https://github.com/apache/tooling-releases-client/blob/main/COMMANDS.md#atr-upload).
 
 This can be triggered during `mvn deploy` in an `atr` profile along `apache-release` one: see IT `mvn -Prun-its verify` for demo.
+
+Documentation published at https://apache.github.io/tooling-atr-maven-plugin/
+
+by command:
+
+```bash
+
+mvn clean siite-deploy
+```

@@ -35,7 +35,7 @@ under the License.
   <name>Apache Tooling ATR Maven Plugin</name>
   <description>Maven plugin for ATR (Apache Test Release) integration to upload Apache distribution artifacts.</description>
 
-  <url>https://tooling.apache.org/</url>
+  <url>https://apache.github.io/tooling-atr-maven-plugin</url>
 
   <developers>
     <developer>
@@ -82,6 +82,14 @@ under the License.
     <system>GitHub Actions</system>
     <url>https://github.com/apache/tooling-atr-maven-plugin/actions</url>
   </ciManagement>
+
+  <distributionManagement>
+    <site>
+      <id>tooling-docs</id>
+      <!-- target repository for documentation -->
+      <url>scm:git:https://github.com/apache/tooling-atr-maven-plugin.git</url>
+    </site>
+  </distributionManagement>
 
   <properties>
     <mavenVersion>3.9.15</mavenVersion>
@@ -210,10 +218,40 @@ under the License.
             </execution>
           </executions>
         </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-site-plugin</artifactId>
+          <configuration>
+            <!-- skip site deploy, we will use scm-publish plugin to publish -->
+            <skipDeploy>true</skipDeploy>
+          </configuration>
+        </plugin>
       </plugins>
     </pluginManagement>
 
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-scm-publish-plugin</artifactId>
+        <configuration>
+          <content>target/site</content>
+          <tryUpdate>true</tryUpdate>
+          <!-- repository branch -->
+          <scmBranch>gh-pages</scmBranch>
+          <!-- target directory for documentation -->
+          <subDirectory>/</subDirectory>
+        </configuration>
+        <executions>
+          <execution>
+            <id>site-deploy</id>
+            <goals>
+              <goal>publish-scm</goal>
+            </goals>
+            <phase>site-deploy</phase>
+          </execution>
+        </executions>
+      </plugin>
+
       <plugin>
         <groupId>com.diffplug.spotless</groupId>
         <artifactId>spotless-maven-plugin</artifactId>
@@ -264,6 +302,7 @@ under the License.
           </execution>
         </executions>
       </plugin>
+
       <plugin>
         <groupId>org.eclipse.sisu</groupId>
         <artifactId>sisu-maven-plugin</artifactId>
@@ -299,7 +338,7 @@ under the License.
         <reportSets>
           <reportSet>
             <reports>
-              <report>report-no-fork</report>
+              <report>report</report>
             </reports>
           </reportSet>
         </reportSets>
