@@ -20,6 +20,8 @@ package org.apache.tooling.atr;
 
 import javax.inject.Inject;
 
+import java.util.List;
+
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -37,8 +39,8 @@ import org.apache.tooling.atr.client.AtrClientFactory;
 public class CheckComposingMojo extends AbstractAtrMojo {
 
     @Inject
-    CheckComposingMojo(MavenProject mavenProject, AtrClientFactory atrClientFactory) {
-        super(mavenProject, atrClientFactory);
+    CheckComposingMojo(MavenProject mavenProject, List<AtrClientFactory> atrClientFactories) {
+        super(mavenProject, atrClientFactories);
     }
 
     @Override

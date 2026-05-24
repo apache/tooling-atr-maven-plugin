@@ -16,29 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tooling.atr.client;
-
-import java.net.URL;
+package org.apache.maven.its.atr;
 
 /**
- * Factory for creating ATR clients.
+ * Simple test application.
  */
-public interface AtrClientFactory {
-
-    /**
-     * The priority of this factory. Mojos will use higher priority factories first.
-     *
-     * @return the priority of this factory
-     */
-    int priority();
-
-    /**
-     * Create a new ATR client.
-     *
-     * @param baseUrl the base URL of the ATR server
-     * @param serverId the server ID from settings.xml containing the credentials for the ATR server
-     * @return the ATR client
-     * @throws AtrClientException if the client cannot be created
-     */
-    AtrClient createAtrClient(URL baseUrl, String serverId) throws AtrClientException;
+public class App {
+    public static void main(String[] args) {
+        System.out.println("Hello from ATR Integration Test!");
+    }
 }

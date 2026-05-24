@@ -19,6 +19,8 @@
 package org.apache.tooling.atr;
 
 import java.net.URL;
+import java.util.Comparator;
+import java.util.List;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -84,9 +86,14 @@ public abstract class AbstractAtrMojo extends AbstractMojo {
 
     private final AtrClientFactory atrClientFactory;
 
-    protected AbstractAtrMojo(MavenProject mavenProject, AtrClientFactory atrClientFactory) {
+    protected AbstractAtrMojo(MavenProject mavenProject, List<AtrClientFactory> atrClientFactory) {
         this.mavenProject = mavenProject;
-        this.atrClientFactory = atrClientFactory;
+        // in test environments, there may be multiple AtrClientFactory implementations,
+        // e.g., the default AtrClientFactoryImpl and a mock implementation,
+        // so we select the one with the highest priority
+        this.atrClientFactory = atrClientFactory.stream()
+                .max(Comparator.comparingInt(AtrClientFactory::priority))
+                .orElseThrow(() -> new IllegalStateException("No AtrClientFactory implementation found"));
     }
 
     @Override

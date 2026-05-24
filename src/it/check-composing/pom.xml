@@ -27,16 +27,14 @@ under the License.
   </parent>
 
   <groupId>org.apache.tooling.its.atr</groupId>
-  <artifactId>tooling-atr-test-apache-release</artifactId>
+  <artifactId>tooling-atr-check-composing</artifactId>
   <version>1.0-SNAPSHOT</version>
 
-  <name>ATR Plugin IT - Apache Release Profile</name>
-  <description>Integration test for atr-mavenplugin with apache-release profile</description>
+  <name>ATR Plugin IT</name>
+  <description>Integration test for check-composing goal with default values</description>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.deploy.skip>true</maven.deploy.skip>
-    <gpg.skip>true</gpg.skip>
   </properties>
 
   <build>
@@ -59,39 +57,4 @@ under the License.
       </plugins>
     </pluginManagement>
   </build>
-
-  <profiles>
-    <profile>
-      <id>apache-release</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.tooling</groupId>
-            <artifactId>atr-maven-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>atr-check-composing</id>
-                <goals>
-                  <goal>check-composing</goal>
-                </goals>
-              </execution>
-              <execution>
-                <id>upload-to-atr</id>
-                <goals>
-                  <goal>upload</goal>
-                </goals>
-                <configuration>
-                  <files>
-                    <file>${project.build.directory}/${project.artifactId}-${project.version}-source-release.zip</file>
-                    <file>${project.build.directory}/${project.artifactId}-${project.version}-source-release.zip.sha512</file>
-                    <!--file>${project.build.directory}/${project.artifactId}-${project.version}-source-release.zip.asc</file-->
-                  </files>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
 </project>
