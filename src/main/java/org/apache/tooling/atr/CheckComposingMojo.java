@@ -33,7 +33,7 @@ import org.apache.tooling.atr.client.AtrClientFactory;
  *
  * @author Maven Team
  */
-@Mojo(name = "check-composing", defaultPhase = LifecyclePhase.INITIALIZE, threadSafe = true)
+@Mojo(name = "check-composing", defaultPhase = LifecyclePhase.INITIALIZE, threadSafe = true, aggregator = true)
 public class CheckComposingMojo extends AbstractAtrMojo {
 
     @Inject
