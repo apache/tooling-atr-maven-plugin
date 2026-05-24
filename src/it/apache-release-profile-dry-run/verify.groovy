@@ -21,21 +21,15 @@
 def buildLog = new File(basedir, 'build.log')
 assert buildLog.exists()
 
-assert buildLog.text.count('[INFO] [Mock ATR client] creating new JWT for username: dummy-asfuid')  == 1
+// dry-run use real ATR client
+assert !buildLog.text.contains('[INFO] [Mock ATR client factory] created')
+
+assert buildLog.text.contains('[INFO] Checking project release in ATR: https://release-test.apache.org/projects/tooling-atr-test-apache-release-dry-run version 1.0-SNAPSHOT') :
         'Expected message not found in build log'
 
-assert buildLog.text.count('[INFO] [Mock ATR client] using cached JWT: mock-jwt-dummy-asfuid')  == 1
+assert buildLog.text.contains('to https://release-test.apache.org/file/tooling-atr-test-apache-release-dry-run/1.0-SNAPSHOT/tooling-atr-test-apache-release-dry-run-1.0-SNAPSHOT-source-release.zip') :
         'Expected message not found in build log'
 
-assert buildLog.text.count('[INFO] [Mock ATR client] created base URL: https://release-test.apache.org/, username: dummy-asfuid, password: dummy-token') == 2:
-        'Expected message not found in build log'
-
-assert buildLog.text.count('[INFO] [Mock ATR client] getRelease: tooling-atr-test-apache-release, 1.0-SNAPSHOT') == 1 :
-        'Expected message not found in build log'
-
-assert buildLog.text.count('[INFO] [Mock ATR client] uploadFile: tooling-atr-test-apache-release, 1.0-SNAPSHOT, tooling-atr-test-apache-release-1.0-SNAPSHOT-source-release.zip, ') == 1 :
-        'Expected message not found in build log'
-
-assert buildLog.text.count('[INFO] [Mock ATR client] uploadFile: tooling-atr-test-apache-release, 1.0-SNAPSHOT, tooling-atr-test-apache-release-1.0-SNAPSHOT-source-release.zip.sha512, ') == 1 :
+assert buildLog.text.contains('to https://release-test.apache.org/file/tooling-atr-test-apache-release-dry-run/1.0-SNAPSHOT/tooling-atr-test-apache-release-dry-run-1.0-SNAPSHOT-source-release.zip.sha512') :
         'Expected message not found in build log'
 

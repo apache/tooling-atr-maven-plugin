@@ -16,29 +16,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tooling.atr.client;
 
-import java.net.URL;
+// Verify that the build log contains evidence of the ATR plugin execution
+def buildLog = new File(basedir, 'build.log')
+assert buildLog.exists()
 
-/**
- * Factory for creating ATR clients.
- */
-public interface AtrClientFactory {
+assert buildLog.text.count('[INFO] [Mock ATR client] created base URL: https://release-test.apache.org/, username: dummy-asfuid, password: dummy-token') == 1:
+        'Expected message not found in build log'
 
-    /**
-     * The priority of this factory. Mojos will use higher priority factories first.
-     *
-     * @return the priority of this factory
-     */
-    int priority();
+assert buildLog.text.count('[INFO] [Mock ATR client] getRelease: tooling-atr-check-composing, 1.0-SNAPSHOT') == 1:
+        'Expected message not found in build log'
 
-    /**
-     * Create a new ATR client.
-     *
-     * @param baseUrl the base URL of the ATR server
-     * @param serverId the server ID from settings.xml containing the credentials for the ATR server
-     * @return the ATR client
-     * @throws AtrClientException if the client cannot be created
-     */
-    AtrClient createAtrClient(URL baseUrl, String serverId) throws AtrClientException;
-}
+assert buildLog.text.count('[INFO] Version is being composed in ATR: tooling-atr-check-composing 1.0-SNAPSHOT') == 1 :
+        'Expected message not found in build log'
+
+return true
