@@ -31,5 +31,5 @@ by command:
 
 ```bash
 
-mvn clean siite-deploy
+mvn clean site-deploy
 ```
