@@ -21,14 +21,6 @@ under the License.
   xsi:schemaLocation="http://maven.apache.org/SITE/2.1.0 https://maven.apache.org/xsd/site-2.1.0.xsd"
   name="Tooling ATR Maven Plugin">
 
-  <bannerLeft href="https://release-test.apache.org/docs/">
-    <image src="https://release-test.apache.org/static/svg/atr_logo.svg" height="83px"/>
-  </bannerLeft>
-
-  <bannerRight>
-    <image src="https://apache.org/img/asf_logo.png" height="83px"/>
-  </bannerRight>
-
   <skin>
     <groupId>org.apache.maven.skins</groupId>
     <artifactId>maven-fluido-skin</artifactId>
@@ -39,8 +31,15 @@ under the License.
 
   <custom>
     <fluidoSkin>
-      <sourceLineNumbersEnabled>true</sourceLineNumbersEnabled>
       <anchorJs />
+      <sourceLineNumbersEnabled>true</sourceLineNumbersEnabled>
+      <sideBarEnabled>false</sideBarEnabled>
+      <topBarEnabled>true</topBarEnabled>
+      <topBarContainerStyle>width: 90%;</topBarContainerStyle>
+      <topBarIcon>
+        <src>https://release-test.apache.org/static/svg/atr_logo.svg</src>
+        <href>https://release-test.apache.org/docs/</href>
+      </topBarIcon>
     </fluidoSkin>
   </custom>
 
