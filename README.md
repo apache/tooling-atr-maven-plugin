@@ -25,11 +25,9 @@ It provides a Maven plugin with an [`atr:upload` goal](src/site/markdown/usage.m
 
 This can be triggered during `mvn deploy` in an `atr` profile along `apache-release` one: see IT `mvn -Prun-its verify` for demo.
 
-Documentation published at https://apache.github.io/tooling-atr-maven-plugin/
-
-by command:
+Documentation published at https://apache.github.io/tooling-atr-maven-plugin/ by command:
 
 ```bash
 
-mvn clean site-deploy
+mvn site-deploy
 ```

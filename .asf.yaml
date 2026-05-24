@@ -16,13 +16,14 @@
 # under the License.
 
 github:
-  description: "Apache Maven ATR Plugin"
-  homepage: https://tooling.apache.org/
+  description: "Apache Tooling ATR Maven Plugin"
+  homepage: https://apache.github.io/tooling-atr-maven-plugin/
   labels:
+    - apache
+    - tooling
+    - atr
     - maven
     - build-management
-    - apache
-    - atr
   features:
     wiki: false
     issues: true
