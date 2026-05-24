@@ -405,9 +405,9 @@ under the License.
             <artifactId>atr-maven-plugin</artifactId>
             <version>${project.version}</version>
             <configuration>
-              <project>${project.artifactId}</project>
+              <project>maven-atr-plugin</project>
+              <!-- ${project.artifactId} default value does not match our need -->
               <!-- https://release-test.apache.org/projects/maven-atr-plugin -->
-              <version>${project.version}</version>
             </configuration>
             <executions>
               <execution>

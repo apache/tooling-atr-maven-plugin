@@ -37,15 +37,15 @@ import org.apache.tooling.atr.client.AtrClientFactory;
 public abstract class AbstractAtrMojo extends AbstractMojo {
 
     /**
-     * The project id for ATR upload.
+     * The project key for ATR upload.
      */
-    @Parameter(property = "atr.project", required = true)
+    @Parameter(property = "atr.project", defaultValue = "${project.artifactId}")
     protected String project;
 
     /**
      * The version for ATR upload.
      */
-    @Parameter(property = "atr.version", required = true)
+    @Parameter(property = "atr.version", defaultValue = "${project.version}")
     protected String version;
 
     /**
