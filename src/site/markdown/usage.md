@@ -45,8 +45,6 @@ To upload release artifacts to ATR:
 
 ```
 mvn org.apache.tooling:atr-maven-plugin:upload \
-  -Datr.project=maven \
-  -Datr.version=4.0.0 \
   -Datr.files=apache-maven-4.0.0-src.tar.gz,apache-maven-4.0.0-src.tar.gz.sha512
 ```
 
@@ -75,10 +73,6 @@ The typical use case is to integrate the ATR plugin into a `push-to-atr` profile
           <plugin>
             <groupId>org.apache.tooling</groupId>
             <artifactId>atr-maven-plugin</artifactId>
-            <configuration>
-              <project>${project.artifactId}</project>
-              <version>${project.version}</version>
-            </configuration>
             <executions>
               <execution>
                 <id>atr-check-composing</id>

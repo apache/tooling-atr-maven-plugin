@@ -61,8 +61,6 @@ under the License.
             <artifactId>atr-maven-plugin</artifactId>
             <configuration>
               <dryRun>true</dryRun>
-              <project>${project.artifactId}</project>
-              <version>${project.version}</version>
             </configuration>
             <executions>
               <execution>
