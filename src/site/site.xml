@@ -40,6 +40,8 @@ under the License.
         <src>https://release-test.apache.org/static/svg/atr_logo.svg</src>
         <href>https://release-test.apache.org/docs/</href>
       </topBarIcon>
+      <!-- skip generation date in output files to avoid unnecessary changes in the generated site -->
+      <skipGenerationDate>true</skipGenerationDate>
     </fluidoSkin>
   </custom>
 

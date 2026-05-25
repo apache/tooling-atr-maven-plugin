@@ -47,3 +47,30 @@ jobs:
 
       - name: Build with Maven
         run: mvn verify site -e -B -V -Prun-its
+
+
+  site-deploy:
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository_owner == 'apache'
+
+    permissions:
+      contents: write
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          java-version: 21
+          distribution: 'zulu'
+          cache: 'maven'
+
+      - name: Site Deploy
+        run: |
+          git config user.email '${{ github.event.head_commit.author.email }}'
+          git config user.name '${{ github.event.head_commit.author.name }}'
+          mvn site-deploy -e -B -V -Dusername=git -Dpassword=${{ github.token }} -Dscmpublish.checkinComment='Site checkin for ${{ github.event.head_commit.id }}' 
