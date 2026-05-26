@@ -71,6 +71,6 @@ jobs:
 
       - name: Site Deploy
         run: |
-          git config user.email '${{ github.event.head_commit.author.email }}'
-          git config user.name '${{ github.event.head_commit.author.name }}'
+          git config --global user.email '${{ github.event.head_commit.author.email }}'
+          git config --global user.name '${{ github.event.head_commit.author.name }}'
           mvn site-deploy -e -B -V -Dusername=git -Dpassword=${{ github.token }} -Dscmpublish.checkinComment='Site checkin for ${{ github.event.head_commit.id }}' 
