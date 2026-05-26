@@ -45,6 +45,7 @@ under the License.
     </fluidoSkin>
   </custom>
 
+  <publishDate position="none" />
   <version position="right" />
 
   <body>
