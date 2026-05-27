@@ -59,7 +59,7 @@ public abstract class AbstractAtrMojo extends AbstractMojo {
      *
      * @since 1.0.0-alpha-1
      */
-    @Parameter(property = "atr.url", defaultValue = "https://release-test.apache.org/")
+    @Parameter(property = "atr.url", defaultValue = "https://releases.apache.org/")
     protected URL url;
 
     /**

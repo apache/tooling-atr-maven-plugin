@@ -24,12 +24,12 @@ assert buildLog.exists()
 // dry-run use real ATR client
 assert !buildLog.text.contains('[INFO] [Mock ATR client factory] created')
 
-assert buildLog.text.contains('[INFO] Checking project release in ATR: https://release-test.apache.org/projects/tooling-atr-test-apache-release-dry-run version 1.0-SNAPSHOT') :
+assert buildLog.text.contains('[INFO] Checking project release in ATR: https://releases.apache.org/projects/tooling-atr-test-apache-release-dry-run version 1.0-SNAPSHOT') :
         'Expected message not found in build log'
 
-assert buildLog.text.contains('to https://release-test.apache.org/file/tooling-atr-test-apache-release-dry-run/1.0-SNAPSHOT/tooling-atr-test-apache-release-dry-run-1.0-SNAPSHOT-source-release.zip') :
+assert buildLog.text.contains('to https://releases.apache.org/file/tooling-atr-test-apache-release-dry-run/1.0-SNAPSHOT/tooling-atr-test-apache-release-dry-run-1.0-SNAPSHOT-source-release.zip') :
         'Expected message not found in build log'
 
-assert buildLog.text.contains('to https://release-test.apache.org/file/tooling-atr-test-apache-release-dry-run/1.0-SNAPSHOT/tooling-atr-test-apache-release-dry-run-1.0-SNAPSHOT-source-release.zip.sha512') :
+assert buildLog.text.contains('to https://releases.apache.org/file/tooling-atr-test-apache-release-dry-run/1.0-SNAPSHOT/tooling-atr-test-apache-release-dry-run-1.0-SNAPSHOT-source-release.zip.sha512') :
         'Expected message not found in build log'
 

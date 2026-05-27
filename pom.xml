@@ -528,7 +528,7 @@ under the License.
             <configuration>
               <project>tooling-atr-maven-plugin</project>
               <!-- ${project.artifactId} default value does not match our need -->
-              <!-- https://release-test.apache.org/projects/tooling-atr-maven-plugin -->
+              <!-- https://release.apache.org/projects/tooling-atr-maven-plugin -->
             </configuration>
             <executions>
               <execution>
