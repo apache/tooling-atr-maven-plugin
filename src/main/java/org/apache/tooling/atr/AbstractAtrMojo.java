@@ -40,30 +40,40 @@ public abstract class AbstractAtrMojo extends AbstractMojo {
 
     /**
      * The project key for ATR upload.
+     *
+     * @since 1.0.0-beta-1
      */
     @Parameter(property = "atr.project", defaultValue = "${project.artifactId}")
     protected String project;
 
     /**
      * The version for ATR upload.
+     *
+     * @since 1.0.0-beta-1
      */
     @Parameter(property = "atr.version", defaultValue = "${project.version}")
     protected String version;
 
     /**
      * The ATR server URL.
+     *
+     * @since 1.0.0-beta-1
      */
     @Parameter(property = "atr.url", defaultValue = "https://release-test.apache.org/")
     protected URL url;
 
     /**
      * Skip plugin execution.
+     *
+     * @since 1.0.0-beta-1
      */
     @Parameter(property = "atr.skip", defaultValue = "false")
     protected boolean skip;
 
     /**
      * Dry run mode. When enabled, the plugin will simulate execution without performing actual operations.
+     *
+     * @since 1.0.0-beta-1
      */
     @Parameter(property = "atr.dryRun", defaultValue = "false")
     protected boolean dryRun;
@@ -71,6 +81,8 @@ public abstract class AbstractAtrMojo extends AbstractMojo {
     /**
      * Server ID from settings.xml containing ATR credentials.
      * The server's username should be the ASF user ID, and the password should be the Personal Access Token (PAT).
+     *
+     * @since 1.0.0-beta-1
      */
     @Parameter(property = "atr.serverId", defaultValue = "apache.atr")
     protected String serverId;
@@ -78,6 +90,8 @@ public abstract class AbstractAtrMojo extends AbstractMojo {
     /**
      * If set to true, the plugin will only execute in the execution root directory (typically the top-level
      * directory of a multi-module build). This prevents the plugin from running multiple times in child modules.
+     *
+     * @since 1.0.0-beta-1
      */
     @Parameter(property = "atr.runOnlyAtExecutionRoot", defaultValue = "false")
     protected boolean runOnlyAtExecutionRoot;
