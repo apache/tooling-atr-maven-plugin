@@ -21,7 +21,7 @@
 def buildLog = new File(basedir, 'build.log')
 assert buildLog.exists()
 
-assert buildLog.text.count('[INFO] [Mock ATR client] created base URL: https://release-test.apache.org/, username: dummy-asfuid, password: dummy-token') == 1:
+assert buildLog.text.count('[INFO] [Mock ATR client] created base URL: https://releases.apache.org/, username: dummy-asfuid, password: dummy-token') == 1:
         'Expected message not found in build log'
 
 assert buildLog.text.count('[INFO] [Mock ATR client] getRelease: tooling-atr-check-composing, 1.0-SNAPSHOT') == 1:

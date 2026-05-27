@@ -42,4 +42,4 @@ Of course, patches are welcome, too. Contributors can check out the project from
 
 [ATR (Apache Trusted Releases)][introduction-to-atr] is a platform through which committees of Apache Software Foundation (ASF) projects can make official ASF software releases.
 
-[introduction-to-atr]: https://release-test.apache.org/docs/introduction-to-atr
+[introduction-to-atr]: https://releases.apache.org/docs/introduction-to-atr

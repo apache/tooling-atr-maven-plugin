@@ -37,8 +37,8 @@ under the License.
       <topBarEnabled>true</topBarEnabled>
       <topBarContainerStyle>width: 90%;</topBarContainerStyle>
       <topBarIcon>
-        <src>https://release-test.apache.org/static/svg/atr_logo.svg</src>
-        <href>https://release-test.apache.org/docs/</href>
+        <src>https://releases.apache.org/static/svg/atr_logo.svg</src>
+        <href>https://releases.apache.org/docs/</href>
       </topBarIcon>
       <!-- skip generation date in output files to avoid unnecessary changes in the generated site -->
       <skipGenerationDate>true</skipGenerationDate>
@@ -52,7 +52,7 @@ under the License.
     <breadcrumbs>
       <item name="Apache" href="https://www.apache.org/" />
       <item name="Tooling" href="https://tooling.apache.org/" />
-      <item name="ATR" href="https://release-test.apache.org/docs/" />
+      <item name="ATR" href="https://releases.apache.org/docs/" />
       <item name="Maven Plugin" href="https://apache.github.io/tooling-atr-maven-plugin/" />
     </breadcrumbs>
 

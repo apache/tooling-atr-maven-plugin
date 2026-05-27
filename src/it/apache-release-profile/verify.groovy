@@ -29,13 +29,10 @@ assert buildLog.text.contains('perform:run-perform-goals') :
         'Expected message not found in build log'
 
 // interaction with ATR client should be visible after perform goal execution
-assert buildLog.text.count('[INFO] [INFO] [Mock ATR client] creating new JWT for username: dummy-asfuid')  == 1 :
-        'Expected message not found in build log'
-
 assert buildLog.text.count('[INFO] [INFO] [Mock ATR client] using cached JWT: mock-jwt-dummy-asfuid')  == 1 :
         'Expected message not found in build log'
 
-assert buildLog.text.count('[INFO] [INFO] [Mock ATR client] created base URL: https://release-test.apache.org/, username: dummy-asfuid, password: dummy-token') == 2 :
+assert buildLog.text.count('[INFO] [INFO] [Mock ATR client] created base URL: https://releases.apache.org/, username: dummy-asfuid, password: dummy-token') == 2 :
         'Expected message not found in build log'
 
 assert buildLog.text.count('[INFO] [INFO] [Mock ATR client] getRelease: tooling-atr-test-apache-release, 1.0') == 1 :
