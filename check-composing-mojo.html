@@ -106,6 +106,7 @@
 <ul>
 <li>Requires a Maven project to be executed.</li>
 <li>The goal is thread-safe and supports parallel builds.</li>
+<li>Since version: <code>1.0.0-beta-1</code>.</li>
 <li>Binds by default to the <a class="externalLink" href="https://maven.apache.org/ref/current/maven-core/lifecycles.html">lifecycle phase</a>: <code>initialize</code>.</li></ul><section><a id="Optional_Parameters"></a>
 <h2>Optional Parameters</h2>
 <table class="table table-striped">
@@ -117,43 +118,44 @@
 <tr class="b">
 <td><a href="#dryRun"><code>&lt;dryRun&gt;</code></a></td>
 <td><code>boolean</code></td>
-<td><code>-</code></td>
+<td><code>1.0.0-beta-1</code></td>
 <td>Dry run mode. When enabled, the plugin will simulate execution without performing actual operations.<br /><strong>Default</strong>: <code>false</code><br /><strong>User Property</strong>: <code>atr.dryRun</code></td></tr>
 <tr class="a">
 <td><a href="#project"><code>&lt;project&gt;</code></a></td>
 <td><code>String</code></td>
-<td><code>-</code></td>
+<td><code>1.0.0-beta-1</code></td>
 <td>The project key for ATR upload.<br /><strong>Default</strong>: <code>${project.artifactId}</code><br /><strong>User Property</strong>: <code>atr.project</code></td></tr>
 <tr class="b">
 <td><a href="#runOnlyAtExecutionRoot"><code>&lt;runOnlyAtExecutionRoot&gt;</code></a></td>
 <td><code>boolean</code></td>
-<td><code>-</code></td>
+<td><code>1.0.0-beta-1</code></td>
 <td>If set to true, the plugin will only execute in the execution root directory (typically the top-level directory of a multi-module build). This prevents the plugin from running multiple times in child modules.<br /><strong>Default</strong>: <code>false</code><br /><strong>User Property</strong>: <code>atr.runOnlyAtExecutionRoot</code></td></tr>
 <tr class="a">
 <td><a href="#serverId"><code>&lt;serverId&gt;</code></a></td>
 <td><code>String</code></td>
-<td><code>-</code></td>
+<td><code>1.0.0-beta-1</code></td>
 <td>Server ID from settings.xml containing ATR credentials. The server's username should be the ASF user ID, and the password should be the Personal Access Token (PAT).<br /><strong>Default</strong>: <code>apache.atr</code><br /><strong>User Property</strong>: <code>atr.serverId</code></td></tr>
 <tr class="b">
 <td><a href="#skip"><code>&lt;skip&gt;</code></a></td>
 <td><code>boolean</code></td>
-<td><code>-</code></td>
+<td><code>1.0.0-beta-1</code></td>
 <td>Skip plugin execution.<br /><strong>Default</strong>: <code>false</code><br /><strong>User Property</strong>: <code>atr.skip</code></td></tr>
 <tr class="a">
 <td><a href="#url"><code>&lt;url&gt;</code></a></td>
 <td><code>URL</code></td>
-<td><code>-</code></td>
+<td><code>1.0.0-beta-1</code></td>
 <td>The ATR server URL.<br /><strong>Default</strong>: <code>https://release-test.apache.org/</code><br /><strong>User Property</strong>: <code>atr.url</code></td></tr>
 <tr class="b">
 <td><a href="#version"><code>&lt;version&gt;</code></a></td>
 <td><code>String</code></td>
-<td><code>-</code></td>
+<td><code>1.0.0-beta-1</code></td>
 <td>The version for ATR upload.<br /><strong>Default</strong>: <code>${project.version}</code><br /><strong>User Property</strong>: <code>atr.version</code></td></tr></table></section><section><a id="Parameter_Details"></a>
 <h2>Parameter Details</h2><a id="dryRun"></a><section><a id="a.3CdryRun.3E"></a>
 <h3>&lt;dryRun&gt;</h3>
 <div>Dry run mode. When enabled, the plugin will simulate execution without performing actual operations.</div>
 <ul>
 <li><strong>Type</strong>: <code>boolean</code></li>
+<li><strong>Since</strong>: <code>1.0.0-beta-1</code></li>
 <li><strong>Required</strong>: <code>No</code></li>
 <li><strong>User Property</strong>: <code>atr.dryRun</code></li>
 <li><strong>Default</strong>: <code>false</code></li></ul><hr /></section><a id="project"></a><section><a id="a.3Cproject.3E"></a>
@@ -161,6 +163,7 @@
 <div>The project key for ATR upload.</div>
 <ul>
 <li><strong>Type</strong>: <code>java.lang.String</code></li>
+<li><strong>Since</strong>: <code>1.0.0-beta-1</code></li>
 <li><strong>Required</strong>: <code>No</code></li>
 <li><strong>User Property</strong>: <code>atr.project</code></li>
 <li><strong>Default</strong>: <code>${project.artifactId}</code></li></ul><hr /></section><a id="runOnlyAtExecutionRoot"></a><section><a id="a.3CrunOnlyAtExecutionRoot.3E"></a>
@@ -168,6 +171,7 @@
 <div>If set to true, the plugin will only execute in the execution root directory (typically the top-level directory of a multi-module build). This prevents the plugin from running multiple times in child modules.</div>
 <ul>
 <li><strong>Type</strong>: <code>boolean</code></li>
+<li><strong>Since</strong>: <code>1.0.0-beta-1</code></li>
 <li><strong>Required</strong>: <code>No</code></li>
 <li><strong>User Property</strong>: <code>atr.runOnlyAtExecutionRoot</code></li>
 <li><strong>Default</strong>: <code>false</code></li></ul><hr /></section><a id="serverId"></a><section><a id="a.3CserverId.3E"></a>
@@ -175,6 +179,7 @@
 <div>Server ID from settings.xml containing ATR credentials. The server's username should be the ASF user ID, and the password should be the Personal Access Token (PAT).</div>
 <ul>
 <li><strong>Type</strong>: <code>java.lang.String</code></li>
+<li><strong>Since</strong>: <code>1.0.0-beta-1</code></li>
 <li><strong>Required</strong>: <code>No</code></li>
 <li><strong>User Property</strong>: <code>atr.serverId</code></li>
 <li><strong>Default</strong>: <code>apache.atr</code></li></ul><hr /></section><a id="skip"></a><section><a id="a.3Cskip.3E"></a>
@@ -182,6 +187,7 @@
 <div>Skip plugin execution.</div>
 <ul>
 <li><strong>Type</strong>: <code>boolean</code></li>
+<li><strong>Since</strong>: <code>1.0.0-beta-1</code></li>
 <li><strong>Required</strong>: <code>No</code></li>
 <li><strong>User Property</strong>: <code>atr.skip</code></li>
 <li><strong>Default</strong>: <code>false</code></li></ul><hr /></section><a id="url"></a><section><a id="a.3Curl.3E"></a>
@@ -189,6 +195,7 @@
 <div>The ATR server URL.</div>
 <ul>
 <li><strong>Type</strong>: <code>java.net.URL</code></li>
+<li><strong>Since</strong>: <code>1.0.0-beta-1</code></li>
 <li><strong>Required</strong>: <code>No</code></li>
 <li><strong>User Property</strong>: <code>atr.url</code></li>
 <li><strong>Default</strong>: <code>https://release-test.apache.org/</code></li></ul><hr /></section><a id="version"></a><section><a id="a.3Cversion.3E"></a>
@@ -196,6 +203,7 @@
 <div>The version for ATR upload.</div>
 <ul>
 <li><strong>Type</strong>: <code>java.lang.String</code></li>
+<li><strong>Since</strong>: <code>1.0.0-beta-1</code></li>
 <li><strong>Required</strong>: <code>No</code></li>
 <li><strong>User Property</strong>: <code>atr.version</code></li>
 <li><strong>Default</strong>: <code>${project.version}</code></li></ul></section></section></section>        </main>
