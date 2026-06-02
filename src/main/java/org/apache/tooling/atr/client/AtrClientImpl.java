@@ -70,7 +70,7 @@ class AtrClientImpl implements AtrClient {
      *
      * @throws AtrClientException if JWT creation fails
      */
-    void ensureJwt() throws AtrClientException {
+    private void ensureJwt() throws AtrClientException {
         if (jwtCache.get() != null) {
             logger.debug("Using cached JWT");
             return;
@@ -80,32 +80,13 @@ class AtrClientImpl implements AtrClient {
             // Create JWT request
             JwtCreateRequest request = new JwtCreateRequest(username, password);
 
-            // Create connection
-            URL jwtUrl = new URL(baseUrl, "api/jwt/create");
-            HttpURLConnection conn = (HttpURLConnection) jwtUrl.openConnection();
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/json");
-            conn.setDoOutput(true);
+            // Execute POST request
+            JwtCreateResponse jwtCreateResponse = executePost("api/jwt/create", request, JwtCreateResponse.class);
+            String jwt = jwtCreateResponse.getJwt();
+            logger.debug("JWT created successfully");
 
-            // Send request
-            try (OutputStream os = conn.getOutputStream()) {
-                objectMapper.writeValue(os, request);
-            }
-
-            // Check response
-            int responseCode = conn.getResponseCode();
-            if (responseCode == HttpURLConnection.HTTP_OK || responseCode == HttpURLConnection.HTTP_CREATED) {
-                JwtCreateResponse response = objectMapper.readValue(conn.getInputStream(), JwtCreateResponse.class);
-                String jwt = response.getJwt();
-                logger.debug("JWT created successfully");
-
-                // Cache JWT for reuse across goals
-                jwtCache.set(jwt);
-                logger.debug("JWT cached");
-            } else {
-                String errorResponse = readErrorResponse(conn.getErrorStream());
-                throw new AtrClientException("Failed to create JWT: HTTP " + responseCode + " - " + errorResponse);
-            }
+            // Cache JWT for reuse across goals
+            jwtCache.set(jwt);
         } catch (IOException e) {
             throw new AtrClientException("Failed to create JWT from PAT", e);
         }
@@ -125,25 +106,14 @@ class AtrClientImpl implements AtrClient {
         ensureJwt();
 
         try {
-            // Create connection
-            URL checkUrl = new URL(baseUrl, "api/release/get/" + project + "/" + version);
-            HttpURLConnection conn = (HttpURLConnection) checkUrl.openConnection();
-            conn.setRequestMethod("GET");
-            conn.setRequestProperty("Authorization", "Bearer " + jwtCache.get());
-
-            // Check response
-            int responseCode = conn.getResponseCode();
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                ReleaseGetResponse response = objectMapper.readValue(conn.getInputStream(), ReleaseGetResponse.class);
-                logger.debug("Get release successful: " + objectMapper.writeValueAsString(response));
-                return response.getRelease();
-            } else if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
-                logger.debug("Release does not exist: " + project + " " + version);
+            ReleaseGetResponse releaseResponse =
+                    executeGet("api/release/get/" + project + "/" + version, ReleaseGetResponse.class);
+            return releaseResponse.getRelease();
+        } catch (AtrClientException e) {
+            if (e.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND) {
                 return null;
-            } else {
-                String errorResponse = readErrorResponse(conn.getErrorStream());
-                throw new AtrClientException("Failed to get release: HTTP " + responseCode + " - " + errorResponse);
             }
+            throw e;
         } catch (IOException e) {
             throw new AtrClientException("Failed to get release in ATR: " + project + " " + version, e);
         }
@@ -172,32 +142,62 @@ class AtrClientImpl implements AtrClient {
             // Create upload request
             ReleaseUploadRequest request = new ReleaseUploadRequest(project, version, path, content);
 
-            // Create connection
-            URL uploadUrl = new URL(baseUrl, "api/release/upload");
-            HttpURLConnection conn = (HttpURLConnection) uploadUrl.openConnection();
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/json");
-            conn.setRequestProperty("Authorization", "Bearer " + jwtCache.get());
-            conn.setDoOutput(true);
+            // Execute POST request
+            ReleaseUploadResponse response = executePost("api/release/upload", request, ReleaseUploadResponse.class);
 
-            // Send request
-            try (OutputStream os = conn.getOutputStream()) {
-                objectMapper.writeValue(os, request);
-            }
-
-            // Check response
-            int responseCode = conn.getResponseCode();
-            if (responseCode == HttpURLConnection.HTTP_CREATED || responseCode == HttpURLConnection.HTTP_ACCEPTED) {
-                ReleaseUploadResponse response =
-                        objectMapper.readValue(conn.getInputStream(), ReleaseUploadResponse.class);
-                logger.debug("Upload successful: " + objectMapper.writeValueAsString(response));
-                return response.getRevision() != null ? response.getRevision().getNumber() : "unknown";
-            } else {
-                String errorResponse = readErrorResponse(conn.getErrorStream());
-                throw new AtrClientException("Failed to upload file: HTTP " + responseCode + " - " + errorResponse);
-            }
+            return response.getRevision() != null ? response.getRevision().getNumber() : "unknown";
         } catch (IOException e) {
             throw new AtrClientException("Failed to upload file to ATR: " + file, e);
+        }
+    }
+
+    private <T> T executeGet(String url, Class<T> responseClass) throws IOException, AtrClientException {
+
+        // Create connection
+        URL uploadUrl = new URL(baseUrl, url);
+        HttpURLConnection conn = (HttpURLConnection) uploadUrl.openConnection();
+        conn.setRequestMethod("GET");
+        if (jwtCache.get() != null) {
+            conn.setRequestProperty("Authorization", "Bearer " + jwtCache.get());
+        }
+
+        // Check response
+        int responseCode = conn.getResponseCode();
+        if (responseCode == HttpURLConnection.HTTP_OK) {
+            return objectMapper.readValue(conn.getInputStream(), responseClass);
+        } else {
+            String errorResponse = readErrorResponse(conn.getErrorStream());
+            throw new AtrClientException(responseCode, errorResponse);
+        }
+    }
+
+    private <T> T executePost(String url, Object requestData, Class<T> responseClass)
+            throws IOException, AtrClientException {
+
+        // Create connection
+        URL uploadUrl = new URL(baseUrl, url);
+        HttpURLConnection conn = (HttpURLConnection) uploadUrl.openConnection();
+        conn.setRequestMethod("POST");
+        conn.setRequestProperty("Content-Type", "application/json");
+        if (jwtCache.get() != null) {
+            conn.setRequestProperty("Authorization", "Bearer " + jwtCache.get());
+        }
+        conn.setDoOutput(true);
+
+        // Send request
+        try (OutputStream os = conn.getOutputStream()) {
+            objectMapper.writeValue(os, requestData);
+        }
+
+        // Check response
+        int responseCode = conn.getResponseCode();
+        if (responseCode == HttpURLConnection.HTTP_OK
+                || responseCode == HttpURLConnection.HTTP_CREATED
+                || responseCode == HttpURLConnection.HTTP_ACCEPTED) {
+            return objectMapper.readValue(conn.getInputStream(), responseClass);
+        } else {
+            String errorResponse = readErrorResponse(conn.getErrorStream());
+            throw new AtrClientException(responseCode, errorResponse);
         }
     }
 

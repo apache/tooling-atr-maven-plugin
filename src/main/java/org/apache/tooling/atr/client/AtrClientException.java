@@ -23,11 +23,24 @@ package org.apache.tooling.atr.client;
  */
 public class AtrClientException extends Exception {
 
+    private final int responseCode;
+
     AtrClientException(String message) {
         super(message);
+        this.responseCode = -1;
     }
 
     AtrClientException(String message, Throwable cause) {
         super(message, cause);
+        this.responseCode = -1;
+    }
+
+    public AtrClientException(int responseCode, String errorResponse) {
+        super("ATR client error: HTTP " + responseCode + ": " + errorResponse);
+        this.responseCode = responseCode;
+    }
+
+    public int getResponseCode() {
+        return responseCode;
     }
 }
