@@ -106,6 +106,7 @@ under the License.
     <version.maven-shared-resources>6</version.maven-shared-resources>
     <version.spotless-maven-plugin>3.6.0</version.spotless-maven-plugin>
     <version.palantirJavaFormat>2.91.0</version.palantirJavaFormat>
+    <version.slf4j>1.7.36</version.slf4j>
 
     <spotless.action>apply</spotless.action>
 
@@ -114,6 +115,18 @@ under the License.
 
     <project.build.outputTimestamp>2026-05-17T23:00:00Z</project.build.outputTimestamp>
   </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.junit</groupId>
+        <artifactId>junit-bom</artifactId>
+        <version>6.0.3</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <dependencies>
     <dependency>
@@ -176,8 +189,27 @@ under the License.
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
-      <version>1.7.36</version>
+      <version>${version.slf4j}</version>
       <scope>provided</scope>
+    </dependency>
+
+    <!-- Test dependencies -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.wiremock</groupId>
+      <artifactId>wiremock-standalone</artifactId>
+      <version>3.13.1</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <version>${version.slf4j}</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
@@ -250,6 +282,8 @@ under the License.
             <goals>
               <goal>check</goal>
             </goals>
+            <!-- execute after spotless-maven-plugin -->
+            <phase>process-resources</phase>
           </execution>
         </executions>
       </plugin>
@@ -262,6 +296,13 @@ under the License.
             <goals>
               <goal>test-jar</goal>
             </goals>
+            <configuration>
+              <includes>
+                <!-- only Mock classes are needed for ITs -->
+                <include>**/AtrClient*Mock.*</include>
+                <include>META-INF/sisu/*</include>
+              </includes>
+            </configuration>
           </execution>
         </executions>
       </plugin>
