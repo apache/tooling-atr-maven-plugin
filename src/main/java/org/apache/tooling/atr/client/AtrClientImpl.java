@@ -28,7 +28,9 @@ import java.nio.file.Path;
 import java.util.Base64;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,7 +64,12 @@ class AtrClientImpl implements AtrClient {
         this.username = username;
         this.password = password;
         this.jwtCache = jwtCache;
-        this.objectMapper = new ObjectMapper();
+        this.objectMapper = JsonMapper.builder()
+                // not strict as ATR api is in work in progress
+                // and may return extra fields or change enum values without notice
+                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                .enable(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE)
+                .build();
     }
 
     /**
@@ -92,6 +99,24 @@ class AtrClientImpl implements AtrClient {
         }
     }
 
+    @Override
+    public ProjectInfo getProject(String project) throws AtrClientException {
+        // Ensure we have a valid JWT
+        ensureJwt();
+
+        try {
+            ProjectGetResponse projectGetResponse = executeGet("api/project/get/" + project, ProjectGetResponse.class);
+            return projectGetResponse.getProject();
+        } catch (AtrClientException e) {
+            if (e.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND) {
+                return null;
+            }
+            throw e;
+        } catch (IOException e) {
+            throw new AtrClientException("Failed to get project from ATR: " + project, e);
+        }
+    }
+
     /**
      * Check if a version exists in ATR and get its release information.
      *
@@ -106,8 +131,8 @@ class AtrClientImpl implements AtrClient {
         ensureJwt();
 
         try {
-            ReleaseGetResponse releaseResponse =
-                    executeGet("api/release/get/" + project + "/" + version, ReleaseGetResponse.class);
+            ReleaseResponse releaseResponse =
+                    executeGet("api/release/get/" + project + "/" + version, ReleaseResponse.class);
             return releaseResponse.getRelease();
         } catch (AtrClientException e) {
             if (e.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND) {
@@ -116,6 +141,20 @@ class AtrClientImpl implements AtrClient {
             throw e;
         } catch (IOException e) {
             throw new AtrClientException("Failed to get release in ATR: " + project + " " + version, e);
+        }
+    }
+
+    @Override
+    public ReleaseInfo createRelease(String project, String version) throws AtrClientException {
+        // Ensure we have a valid JWT
+        ensureJwt();
+
+        try {
+            ReleaseCreateRequest request = new ReleaseCreateRequest(project, version);
+            ReleaseResponse releaseResponse = executePost("api/release/create", request, ReleaseResponse.class);
+            return releaseResponse.getRelease();
+        } catch (IOException e) {
+            throw new AtrClientException("Failed to create release in ATR: " + project + " " + version, e);
         }
     }
 

@@ -47,8 +47,27 @@ class AtrClientMock implements AtrClient {
     }
 
     @Override
+    public ProjectInfo getProject(String project) {
+        logger.info("[Mock ATR client] getProject: {}", project);
+        ProjectInfo projectInfo = new ProjectInfo();
+        projectInfo.setName(project);
+        projectInfo.setStatus(ProjectStatus.ACTIVE);
+        return projectInfo;
+    }
+
+    @Override
     public ReleaseInfo getRelease(String project, String version) {
         logger.info("[Mock ATR client] getRelease: {}, {}", project, version);
+        ReleaseInfo releaseInfo = new ReleaseInfo();
+        releaseInfo.setProjectName(project);
+        releaseInfo.setVersion(version);
+        releaseInfo.setPhase(ReleaseInfo.PHASE_RELEASE_CANDIDATE_DRAFT);
+        return releaseInfo;
+    }
+
+    @Override
+    public ReleaseInfo createRelease(String project, String version) throws AtrClientException {
+        logger.info("[Mock ATR client] createRelease: {}, {}", project, version);
         ReleaseInfo releaseInfo = new ReleaseInfo();
         releaseInfo.setProjectName(project);
         releaseInfo.setVersion(version);

@@ -38,9 +38,11 @@ import org.slf4j.LoggerFactory;
  */
 @Named
 @Singleton
-class AtrClientFactoryMock extends AtrClientFactoryImpl {
+public class AtrClientFactoryMock extends AtrClientFactoryImpl {
 
     private final Logger logger = LoggerFactory.getLogger(AtrClientFactoryMock.class);
+
+    private AtrClient atrClient;
 
     @Inject
     AtrClientFactoryMock(Provider<MavenSession> mavenSessionProvider, SettingsDecrypter settingsDecrypter) {
@@ -55,6 +57,18 @@ class AtrClientFactoryMock extends AtrClientFactoryImpl {
 
     @Override
     protected AtrClient newAtrClient(URL baseUrl, String username, String password, AtomicReference<String> jwtCache) {
+        if (atrClient != null) {
+            return atrClient;
+        }
         return new AtrClientMock(baseUrl, username, password, jwtCache);
+    }
+
+    /**
+     * Set the ATR client to be returned by this factory.
+     *
+     * @param atrClient the ATR client to be returned by this factory
+     */
+    public void setClient(AtrClient atrClient) {
+        this.atrClient = atrClient;
     }
 }

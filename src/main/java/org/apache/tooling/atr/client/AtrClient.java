@@ -20,7 +20,7 @@ package org.apache.tooling.atr.client;
 
 import java.nio.file.Path;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonEnumDefaultValue;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -31,6 +31,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public interface AtrClient {
 
     /**
+     * Get the project information.
+     *
+     * @param project the project id
+     * @return the project information, or null if the version does not exist
+     * @throws AtrClientException if the project cannot be retrieved
+     */
+    ProjectInfo getProject(String project) throws AtrClientException;
+
+    /**
      * Check if a version exists in ATR and get its release information.
      *
      * @param project the project id
@@ -39,6 +48,17 @@ public interface AtrClient {
      * @throws AtrClientException if the check fails
      */
     ReleaseInfo getRelease(String project, String version) throws AtrClientException;
+
+    /**
+     * Create a new release in ATR.
+     *
+     * @param project the project id
+     * @param version the version
+     * @return the release information of the newly created release
+     * @throws AtrClientException if the release creation fails
+     */
+    ReleaseInfo createRelease(String project, String version) throws AtrClientException;
+
     /**
      * Upload a file to ATR.
      *
@@ -74,7 +94,6 @@ public interface AtrClient {
         }
     }
 
-    @JsonIgnoreProperties(ignoreUnknown = true)
     class JwtCreateResponse {
         @JsonProperty("jwt")
         private String jwt;
@@ -125,7 +144,6 @@ public interface AtrClient {
         }
     }
 
-    @JsonIgnoreProperties(ignoreUnknown = true)
     class ReleaseUploadResponse {
         @JsonProperty("endpoint")
         private String endpoint;
@@ -150,7 +168,6 @@ public interface AtrClient {
         }
     }
 
-    @JsonIgnoreProperties(ignoreUnknown = true)
     class Revision {
         @JsonProperty("number")
         private String number;
@@ -197,8 +214,7 @@ public interface AtrClient {
         }
     }
 
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    class ReleaseGetResponse {
+    class ReleaseResponse {
         @JsonProperty("endpoint")
         private String endpoint;
 
@@ -222,7 +238,6 @@ public interface AtrClient {
         }
     }
 
-    @JsonIgnoreProperties(ignoreUnknown = true)
     class ReleaseInfo {
         // Phase constants
         public static final String PHASE_RELEASE_CANDIDATE_DRAFT = "release_candidate_draft";
@@ -368,6 +383,89 @@ public interface AtrClient {
                 default:
                     return phase;
             }
+        }
+    }
+
+    class ReleaseCreateRequest {
+        private final String project;
+        private final String version;
+
+        public ReleaseCreateRequest(String project, String version) {
+            this.project = project;
+            this.version = version;
+        }
+
+        public String getProject() {
+            return project;
+        }
+
+        public String getVersion() {
+            return version;
+        }
+    }
+
+    class ProjectGetResponse {
+        @JsonProperty("endpoint")
+        private String endpoint;
+
+        @JsonProperty("project")
+        private ProjectInfo project;
+
+        public String getEndpoint() {
+            return endpoint;
+        }
+
+        public ProjectInfo getProject() {
+            return project;
+        }
+    }
+
+    class ProjectInfo {
+        private String name;
+        private ProjectStatus status;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public ProjectStatus getStatus() {
+            return status;
+        }
+
+        public void setStatus(ProjectStatus status) {
+            this.status = status;
+        }
+    }
+
+    enum ProjectStatus {
+        @JsonProperty("active")
+        ACTIVE("active"),
+
+        @JsonProperty("dormant")
+        DORMANT("dormant"),
+
+        @JsonProperty("retired")
+        RETIRED("retired"),
+
+        @JsonProperty("standing")
+        STANDING("STANDING"),
+
+        @JsonEnumDefaultValue
+        UNKNOWN("unknown");
+
+        private final String description;
+
+        ProjectStatus(String description) {
+            this.description = description;
+        }
+
+        @Override
+        public String toString() {
+            return description;
         }
     }
 }

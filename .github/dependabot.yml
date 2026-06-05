@@ -20,6 +20,10 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+    ignore:
+      # Ignore updates for plexus-xml - Maven 3.x plugin compatibility
+      - dependency-name: "org.codehaus.plexus:plexus-xml"
+        versions: '[4.0.0,)'
 
   - package-ecosystem: "github-actions"
     directory: "/"
