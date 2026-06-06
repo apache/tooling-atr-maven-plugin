@@ -334,6 +334,22 @@ under the License.
       </plugin>
 
       <plugin>
+        <groupId>org.cyclonedx</groupId>
+        <artifactId>cyclonedx-maven-plugin</artifactId>
+        <version>2.9.1</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>makeAggregateBom</goal>
+            </goals>
+            <configuration>
+              <outputFormat>json</outputFormat>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
         <groupId>com.diffplug.spotless</groupId>
         <artifactId>spotless-maven-plugin</artifactId>
         <version>${version.spotless-maven-plugin}</version>
