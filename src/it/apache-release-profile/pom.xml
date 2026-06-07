@@ -37,7 +37,14 @@ under the License.
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.deploy.skip>true</maven.deploy.skip>
     <gpg.skip>true</gpg.skip>
+    <!-- don't push changes to remote SCM repository during release preparation  -->
+    <pushChanges>false</pushChanges>
   </properties>
+
+  <scm>
+    <!-- use local file-based SCM for testing purpose -->
+    <developerConnection>scm:git:file://${project.basedir}</developerConnection>
+  </scm>
 
   <build>
     <pluginManagement>

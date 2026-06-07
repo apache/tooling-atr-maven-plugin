@@ -21,21 +21,29 @@
 def buildLog = new File(basedir, 'build.log')
 assert buildLog.exists()
 
-assert buildLog.text.count('[INFO] [Mock ATR client] creating new JWT for username: dummy-asfuid')  == 1
+// in final log we have both goal executed - prepare and perform
+assert buildLog.text.contains('prepare:run-preparation-goals') :
         'Expected message not found in build log'
 
-assert buildLog.text.count('[INFO] [Mock ATR client] using cached JWT: mock-jwt-dummy-asfuid')  == 1
+assert buildLog.text.contains('perform:run-perform-goals') :
         'Expected message not found in build log'
 
-assert buildLog.text.count('[INFO] [Mock ATR client] created base URL: https://release-test.apache.org/, username: dummy-asfuid, password: dummy-token') == 2:
+// interaction with ATR client should be visible after perform goal execution
+assert buildLog.text.count('[INFO] [INFO] [Mock ATR client] creating new JWT for username: dummy-asfuid')  == 1 :
         'Expected message not found in build log'
 
-assert buildLog.text.count('[INFO] [Mock ATR client] getRelease: tooling-atr-test-apache-release, 1.0-SNAPSHOT') == 1 :
+assert buildLog.text.count('[INFO] [INFO] [Mock ATR client] using cached JWT: mock-jwt-dummy-asfuid')  == 1 :
         'Expected message not found in build log'
 
-assert buildLog.text.count('[INFO] [Mock ATR client] uploadFile: tooling-atr-test-apache-release, 1.0-SNAPSHOT, tooling-atr-test-apache-release-1.0-SNAPSHOT-source-release.zip, ') == 1 :
+assert buildLog.text.count('[INFO] [INFO] [Mock ATR client] created base URL: https://release-test.apache.org/, username: dummy-asfuid, password: dummy-token') == 2 :
         'Expected message not found in build log'
 
-assert buildLog.text.count('[INFO] [Mock ATR client] uploadFile: tooling-atr-test-apache-release, 1.0-SNAPSHOT, tooling-atr-test-apache-release-1.0-SNAPSHOT-source-release.zip.sha512, ') == 1 :
+assert buildLog.text.count('[INFO] [INFO] [Mock ATR client] getRelease: tooling-atr-test-apache-release, 1.0') == 1 :
+        'Expected message not found in build log'
+
+assert buildLog.text.count('[INFO] [INFO] [Mock ATR client] uploadFile: tooling-atr-test-apache-release, 1.0, tooling-atr-test-apache-release-1.0-source-release.zip, ') == 1 :
+        'Expected message not found in build log'
+
+assert buildLog.text.count('[INFO] [INFO] [Mock ATR client] uploadFile: tooling-atr-test-apache-release, 1.0, tooling-atr-test-apache-release-1.0-source-release.zip.sha512, ') == 1 :
         'Expected message not found in build log'
 
