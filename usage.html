@@ -135,9 +135,9 @@ under the License.
 <p>To upload release artifacts to ATR:</p>
 
 <pre><code class="nohighlight nocode">mvn org.apache.tooling:atr-maven-plugin:upload \
-  -Datr.files=apache-maven-4.0.0-src.tar.gz,apache-maven-4.0.0-src.tar.gz.sha512
-</code></pre></section><section><a id="Integration_with_Release_Profile"></a>
-<h2>Integration with Release Profile</h2>
+  -Datr.files=target/apache-maven-4.0.0-src.tar.gz,target/apache-maven-4.0.0-src.tar.gz.sha512
+</code></pre></section><section><a id="Integration_ATR_plugin_with_the_push-to-atr_profile"></a>
+<h2>Integration ATR plugin with the push-to-atr profile</h2>
 <p>The typical use case is to integrate the ATR plugin into a <code>push-to-atr</code> profile that will be used optionally with <code>apache-release</code> profile:</p>
 
 <pre class="prettyprint linenums"><code class="language-xml">&lt;project&gt;
@@ -188,10 +188,17 @@ under the License.
   &lt;/profiles&gt;
 &lt;/project&gt;
 </code></pre>
-<p>Then during the release process:</p>
+<p>Then you can test the upload current project version by running:</p>
 
 <pre><code class="nohighlight nocode">mvn clean deploy -Papache-release,push-to-atr
-</code></pre></section><section><a id="Directory_Organization"></a>
+</code></pre>
+<p>or during the release process:</p>
+
+<pre><code class="nohighlight nocode">mvn release:prepare
+mvn release:perform -Ppush-to-atr
+</code></pre>
+<p><strong>NOTE</strong>: The <code>check-composing</code> goal will check if the version is already being composed in ATR.</p>
+<p>You need to manually create a new version in ATR service before using the <code>push-to-atr</code> profile.</p></section><section><a id="Directory_Organization"></a>
 <h2>Directory Organization</h2>
 <p>You can organize uploaded files in subdirectories:</p>
 
