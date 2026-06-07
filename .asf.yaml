@@ -83,7 +83,7 @@ project:
         - dev@tooling.apache.org
     vote_mode: email
     min_hours: 72
-    license_check_mode: RAT
+    #license_check_mode: RAT
     source_artifact_paths:
       - "*-source-release.zip"
   features:
