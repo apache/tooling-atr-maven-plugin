@@ -93,7 +93,7 @@ public abstract class AbstractAtrMojo extends AbstractMojo {
      *
      * @since 1.0.0-beta-1
      */
-    @Parameter(property = "atr.runOnlyAtExecutionRoot", defaultValue = "false")
+    @Parameter(property = "atr.runOnlyAtExecutionRoot", defaultValue = "true")
     protected boolean runOnlyAtExecutionRoot;
 
     private final MavenProject mavenProject;
