@@ -344,6 +344,7 @@ under the License.
             </goals>
             <configuration>
               <outputFormat>json</outputFormat>
+              <outputName>${project.artifactId}-${project.version}-cyclonedx</outputName>
             </configuration>
           </execution>
         </executions>
@@ -503,9 +504,9 @@ under the License.
             <artifactId>atr-maven-plugin</artifactId>
             <version>${project.version}</version>
             <configuration>
-              <project>maven-atr-plugin</project>
+              <project>tooling-atr-maven-plugin</project>
               <!-- ${project.artifactId} default value does not match our need -->
-              <!-- https://release-test.apache.org/projects/maven-atr-plugin -->
+              <!-- https://release-test.apache.org/projects/tooling-atr-maven-plugin -->
             </configuration>
             <executions>
               <execution>
@@ -524,6 +525,7 @@ under the License.
                     <file>${project.build.directory}/${project.artifactId}-${project.version}-source-release.zip</file>
                     <file>${project.build.directory}/${project.artifactId}-${project.version}-source-release.zip.sha512</file>
                     <file>${project.build.directory}/${project.artifactId}-${project.version}-source-release.zip.asc</file>
+                    <file>${project.build.directory}/${project.artifactId}-${project.version}-cyclonedx.json</file>
                   </files>
                 </configuration>
               </execution>
