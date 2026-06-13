@@ -25,6 +25,7 @@ import java.util.List;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.tooling.atr.client.AtrClient;
 import org.apache.tooling.atr.client.AtrClientException;
@@ -38,6 +39,14 @@ import org.apache.tooling.atr.client.AtrClientFactory;
  */
 @Mojo(name = "check-composing", defaultPhase = LifecyclePhase.INITIALIZE, threadSafe = true)
 public class CheckComposingMojo extends AbstractAtrMojo {
+
+    /**
+     * If set to true, the plugin will create the version in ATR if it does not exist.
+     *
+     * @since 1.0.0-beta-1
+     */
+    @Parameter(property = "atr.createVersion", defaultValue = "false")
+    private boolean createVersion;
 
     @Inject
     CheckComposingMojo(MavenProject mavenProject, List<AtrClientFactory> atrClientFactories) {
@@ -59,6 +68,11 @@ public class CheckComposingMojo extends AbstractAtrMojo {
 
         AtrClient client = createAtrClient();
         AtrClient.ReleaseInfo releaseInfo = client.getRelease(project, version);
+
+        if (releaseInfo == null && createVersion) {
+            getLog().info("Version does not exist in ATR, creating new version: " + project + " " + version);
+            releaseInfo = client.createRelease(project, version);
+        }
 
         if (releaseInfo == null) {
             getLog().info("Version does not exist in ATR: " + project + " " + version + System.lineSeparator()

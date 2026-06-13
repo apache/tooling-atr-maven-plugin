@@ -39,6 +39,17 @@ public interface AtrClient {
      * @throws AtrClientException if the check fails
      */
     ReleaseInfo getRelease(String project, String version) throws AtrClientException;
+
+    /**
+     * Create a new release in ATR.
+     *
+     * @param project the project id
+     * @param version the version
+     * @return the release information of the newly created release
+     * @throws AtrClientException if the release creation fails
+     */
+    ReleaseInfo createRelease(String project, String version) throws AtrClientException;
+
     /**
      * Upload a file to ATR.
      *
@@ -198,7 +209,7 @@ public interface AtrClient {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    class ReleaseGetResponse {
+    class ReleaseResponse {
         @JsonProperty("endpoint")
         private String endpoint;
 
@@ -368,6 +379,25 @@ public interface AtrClient {
                 default:
                     return phase;
             }
+        }
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    class ReleaseCreateRequest {
+        private final String project;
+        private final String version;
+
+        public ReleaseCreateRequest(String project, String version) {
+            this.project = project;
+            this.version = version;
+        }
+
+        public String getProject() {
+            return project;
+        }
+
+        public String getVersion() {
+            return version;
         }
     }
 }
