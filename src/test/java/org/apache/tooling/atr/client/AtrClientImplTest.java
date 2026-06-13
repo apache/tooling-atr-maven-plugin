@@ -120,6 +120,71 @@ class AtrClientImplTest {
     }
 
     @Test
+    void createReleaseShouldSendCorrectPayload() throws Exception {
+        stubForJwtCreate();
+
+        stubFor(post(urlEqualTo("/api/release/create"))
+                .withHeader("Authorization", equalTo("Bearer test-jwt"))
+                .willReturn(aResponse()
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("{\"release\":{"
+                                + "  \"version\":\"2.0.0\","
+                                + "  \"phase\":\"release_candidate_draft\""
+                                + "}}")));
+
+        AtrClient.ReleaseInfo release = atrClient.createRelease("my-project", "2.0.0");
+
+        assertNotNull(release);
+        assertEquals("2.0.0", release.getVersion());
+
+        // Verify the request body contains correct project and version
+        verify(
+                1,
+                postRequestedFor(urlEqualTo("/api/release/create"))
+                        .withHeader("Authorization", equalTo("Bearer test-jwt"))
+                        .withRequestBody(matchingJsonPath("$.project", equalTo("my-project")))
+                        .withRequestBody(matchingJsonPath("$.version", equalTo("2.0.0"))));
+    }
+
+    @Test
+    void createReleaseShouldUseCachedJwt() throws Exception {
+        stubForJwtCreate();
+
+        stubFor(post(urlEqualTo("/api/release/create"))
+                .withHeader("Authorization", equalTo("Bearer test-jwt"))
+                .willReturn(aResponse()
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("{\"release\":{"
+                                + "  \"version\":\"1.0.0\","
+                                + "  \"phase\":\"release_candidate_draft\""
+                                + "}}")));
+
+        // First call
+        atrClient.createRelease("test-project", "1.0.0");
+
+        // Second call should reuse cached JWT
+        atrClient.createRelease("test-project", "1.0.0");
+
+        // Verify that JWT was only created once and release create was called twice
+        verify(1, postRequestedFor(urlEqualTo("/api/jwt/create")));
+        verify(2, postRequestedFor(urlEqualTo("/api/release/create")));
+    }
+
+    @Test
+    void createReleaseServerErrorShouldThrowException() {
+        stubForJwtCreate();
+
+        stubFor(post(urlEqualTo("/api/release/create"))
+                .withHeader("Authorization", equalTo("Bearer test-jwt"))
+                .willReturn(aResponse().withStatus(500).withBody("{\"error\": \"Internal server error\"}")));
+
+        AtrClientException exception =
+                assertThrows(AtrClientException.class, () -> atrClient.createRelease("test-project", "1.0.0"));
+
+        assertTrue(exception.getMessage().contains("\"Internal server error\""));
+    }
+
+    @Test
     void uploadFileShouldSucceedWithoutRevisionNumber(@TempDir Path tempDir) throws Exception {
         stubForJwtCreate();
 

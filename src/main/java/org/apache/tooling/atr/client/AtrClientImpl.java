@@ -106,8 +106,8 @@ class AtrClientImpl implements AtrClient {
         ensureJwt();
 
         try {
-            ReleaseGetResponse releaseResponse =
-                    executeGet("api/release/get/" + project + "/" + version, ReleaseGetResponse.class);
+            ReleaseResponse releaseResponse =
+                    executeGet("api/release/get/" + project + "/" + version, ReleaseResponse.class);
             return releaseResponse.getRelease();
         } catch (AtrClientException e) {
             if (e.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND) {
@@ -116,6 +116,20 @@ class AtrClientImpl implements AtrClient {
             throw e;
         } catch (IOException e) {
             throw new AtrClientException("Failed to get release in ATR: " + project + " " + version, e);
+        }
+    }
+
+    @Override
+    public ReleaseInfo createRelease(String project, String version) throws AtrClientException {
+        // Ensure we have a valid JWT
+        ensureJwt();
+
+        try {
+            ReleaseCreateRequest request = new ReleaseCreateRequest(project, version);
+            ReleaseResponse releaseResponse = executePost("api/release/create", request, ReleaseResponse.class);
+            return releaseResponse.getRelease();
+        } catch (IOException e) {
+            throw new AtrClientException("Failed to create release in ATR: " + project + " " + version, e);
         }
     }
 
