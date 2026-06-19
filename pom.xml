@@ -29,7 +29,7 @@ under the License.
 
   <groupId>org.apache.tooling</groupId>
   <artifactId>atr-maven-plugin</artifactId>
-  <version>1.0.0-alpha-1</version>
+  <version>1.0.0-alpha-2-SNAPSHOT</version>
   <packaging>maven-plugin</packaging>
 
   <name>Apache Tooling ATR Maven Plugin</name>
@@ -76,7 +76,7 @@ under the License.
   <scm>
     <connection>scm:git:https://gitbox.apache.org/repos/asf/tooling-atr-maven-plugin.git</connection>
     <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/tooling-atr-maven-plugin.git</developerConnection>
-    <tag>atr-maven-plugin-1.0.0-alpha-1</tag>
+    <tag>main</tag>
     <url>https://github.com/apache/tooling-atr-maven-plugin/tree/${project.scm.tag}</url>
   </scm>
 
@@ -113,7 +113,7 @@ under the License.
     <invoker.streamLogsOnFailures>true</invoker.streamLogsOnFailures>
     <invoker.rerunFailingTestsCount>1</invoker.rerunFailingTestsCount>
 
-    <project.build.outputTimestamp>2026-06-19T15:56:15Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2026-06-19T15:56:31Z</project.build.outputTimestamp>
   </properties>
 
   <dependencyManagement>
