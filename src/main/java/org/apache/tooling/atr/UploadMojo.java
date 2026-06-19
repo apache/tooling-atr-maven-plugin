@@ -36,21 +36,21 @@ import org.codehaus.plexus.util.FileUtils;
  * Upload Apache distribution artifacts to ATR (Apache Test Release) compose space before vote.
  *
  * @author Maven Team
- * @since 1.0.0-beta-1
+ * @since 1.0.0-alpha-1
  */
 @Mojo(name = "upload", defaultPhase = LifecyclePhase.DEPLOY, threadSafe = true)
 public class UploadMojo extends AbstractAtrMojo {
 
     /**
      * The files to upload to ATR.
-     * @since 1.0.0-beta-1
+     * @since 1.0.0-alpha-1
      */
     @Parameter(property = "atr.files", required = true)
     private Path[] files;
 
     /**
      * The target directory in ATR upload area where files will be uploaded.
-     * @since 1.0.0-beta-1
+     * @since 1.0.0-alpha-1
      */
     @Parameter(property = "atr.directory")
     private String directory;

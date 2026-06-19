@@ -60,7 +60,7 @@ The typical use case is to integrate the ATR plugin into a `push-to-atr` profile
       <plugin>
         <groupId>org.apache.tooling</groupId>
         <artifactId>atr-maven-plugin</artifactId>
-        <version>1.0.0-beta-1-SNAPSHOT</version>
+        <version>1.0.0-alpha-1-SNAPSHOT</version>
       </plugin>
     </plugins>
   </build>
