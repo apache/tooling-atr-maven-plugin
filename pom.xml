@@ -500,6 +500,28 @@ under the License.
       <build>
         <plugins>
           <plugin>
+            <groupId>net.nicoulaj.maven.plugins</groupId>
+            <artifactId>checksum-maven-plugin</artifactId>
+            <version>${version.checksum-maven-plugin}</version>
+            <executions>
+              <execution>
+                <id>cyclonedx-checksum</id>
+                <goals>
+                  <goal>artifacts</goal>
+                </goals>
+                <phase>post-integration-test</phase>
+                <configuration>
+                  <algorithms>
+                    <algorithm>SHA-512</algorithm>
+                  </algorithms>
+                  <includeClassifiers>cyclonedx</includeClassifiers>
+                  <excludeMainArtifact>true</excludeMainArtifact>
+                  <csvSummary>false</csvSummary>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
             <groupId>org.apache.tooling</groupId>
             <artifactId>atr-maven-plugin</artifactId>
             <version>${project.version}</version>
@@ -526,6 +548,8 @@ under the License.
                     <file>${project.build.directory}/${project.artifactId}-${project.version}-source-release.zip.sha512</file>
                     <file>${project.build.directory}/${project.artifactId}-${project.version}-source-release.zip.asc</file>
                     <file>${project.build.directory}/${project.artifactId}-${project.version}-cyclonedx.json</file>
+                    <file>${project.build.directory}/${project.artifactId}-${project.version}-cyclonedx.json.sha512</file>
+                    <file>${project.build.directory}/${project.artifactId}-${project.version}-cyclonedx.json.asc</file>
                   </files>
                 </configuration>
               </execution>
