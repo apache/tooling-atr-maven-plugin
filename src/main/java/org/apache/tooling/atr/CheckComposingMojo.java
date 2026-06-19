@@ -35,7 +35,7 @@ import org.apache.tooling.atr.client.AtrClientFactory;
  * Check if a version exists in ATR and is being composed (in draft phase).
  *
  * @author Maven Team
- * @since 1.0.0-beta-1
+ * @since 1.0.0-alpha-1
  */
 @Mojo(name = "check-composing", defaultPhase = LifecyclePhase.INITIALIZE, threadSafe = true)
 public class CheckComposingMojo extends AbstractAtrMojo {
@@ -43,7 +43,7 @@ public class CheckComposingMojo extends AbstractAtrMojo {
     /**
      * If set to true, the plugin will create the version in ATR if it does not exist.
      *
-     * @since 1.0.0-beta-1
+     * @since 1.0.0-alpha-1
      */
     @Parameter(property = "atr.createVersion", defaultValue = "false")
     private boolean createVersion;
