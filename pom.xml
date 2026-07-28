@@ -104,7 +104,7 @@ under the License.
     <minimalJavaBuildVersion>17</minimalJavaBuildVersion>
 
     <version.maven-shared-resources>6</version.maven-shared-resources>
-    <version.spotless-maven-plugin>3.8.0</version.spotless-maven-plugin>
+    <version.spotless-maven-plugin>3.9.0</version.spotless-maven-plugin>
     <version.palantirJavaFormat>2.96.0</version.palantirJavaFormat>
     <version.slf4j>1.7.36</version.slf4j>
 
