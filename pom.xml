@@ -524,11 +524,11 @@ under the License.
           <plugin>
             <groupId>org.apache.tooling</groupId>
             <artifactId>atr-maven-plugin</artifactId>
-            <version>${project.version}</version>
+            <version>1.0.0-alpha-1</version>
             <configuration>
               <project>tooling-atr-maven-plugin</project>
               <!-- ${project.artifactId} default value does not match our need -->
-              <!-- https://release.apache.org/projects/tooling-atr-maven-plugin -->
+              <!-- https://releases.apache.org/projects/tooling-atr-maven-plugin -->
             </configuration>
             <executions>
               <execution>
