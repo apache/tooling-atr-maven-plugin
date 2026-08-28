@@ -18,6 +18,8 @@
  */
 package org.apache.tooling.atr.client;
 
+import java.net.URL;
+
 /**
  * Exception thrown by the ATR client.
  */
@@ -35,8 +37,8 @@ public class AtrClientException extends Exception {
         this.responseCode = -1;
     }
 
-    public AtrClientException(int responseCode, String errorResponse) {
-        super("ATR client error: HTTP " + responseCode + ": " + errorResponse);
+    AtrClientException(int responseCode, String errorResponse, String method, URL url) {
+        super("ATR client error: " + method + " " + url + " HTTP " + responseCode + ": " + errorResponse);
         this.responseCode = responseCode;
     }
 
