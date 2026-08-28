@@ -181,7 +181,7 @@ class AtrClientImpl implements AtrClient {
             return objectMapper.readValue(conn.getInputStream(), responseClass);
         } else {
             String errorResponse = readErrorResponse(conn.getErrorStream());
-            throw new AtrClientException(responseCode, errorResponse);
+            throw new AtrClientException(responseCode, errorResponse, "GET", uploadUrl);
         }
     }
 
@@ -211,7 +211,7 @@ class AtrClientImpl implements AtrClient {
             return objectMapper.readValue(conn.getInputStream(), responseClass);
         } else {
             String errorResponse = readErrorResponse(conn.getErrorStream());
-            throw new AtrClientException(responseCode, errorResponse);
+            throw new AtrClientException(responseCode, errorResponse, "POST", uploadUrl);
         }
     }
 
