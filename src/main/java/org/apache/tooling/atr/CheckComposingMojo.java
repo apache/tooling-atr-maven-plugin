@@ -75,7 +75,7 @@ public class CheckComposingMojo extends AbstractAtrMojo {
         }
 
         if (releaseInfo == null) {
-            getLog().info("Version does not exist in ATR: " + project + " " + version + System.lineSeparator()
+            getLog().error("Version does not exist in ATR: " + project + " " + version + System.lineSeparator()
                     + "       See " + url + "projects/" + project + " for more information");
             throw new MojoFailureException("Version does not exist in ATR: " + project + " " + version);
         }
