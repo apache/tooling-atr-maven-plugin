@@ -38,7 +38,7 @@ import org.codehaus.plexus.util.FileUtils;
  * @author Maven Team
  * @since 1.0.0-alpha-1
  */
-@Mojo(name = "upload", defaultPhase = LifecyclePhase.DEPLOY, threadSafe = true)
+@Mojo(name = "upload", defaultPhase = LifecyclePhase.DEPLOY, threadSafe = true, aggregator = true)
 public class UploadMojo extends AbstractAtrMojo {
 
     /**
