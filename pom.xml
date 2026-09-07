@@ -106,7 +106,7 @@ under the License.
     <version.maven-shared-resources>6</version.maven-shared-resources>
     <version.spotless-maven-plugin>3.10.0</version.spotless-maven-plugin>
     <version.palantirJavaFormat>2.97.0</version.palantirJavaFormat>
-    <version.slf4j>1.7.36</version.slf4j>
+    <version.slf4j>2.0.19</version.slf4j>
 
     <spotless.action>apply</spotless.action>
 
