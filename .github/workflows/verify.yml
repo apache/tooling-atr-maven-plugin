@@ -17,21 +17,23 @@
 
 name: Verify
 
-on: [ push, pull_request ]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
 
-# allow single build per branch or PR
+# allow single build per PR or commit
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  # cancel only outdated PR builds, never interrupt builds and site deploys on main
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 # clear all permissions for GITHUB_TOKEN
 permissions: { }
 
 jobs:
   build:
-    # execute on any push or pull request from forked repo
-    if: github.event_name == 'push' || ( github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork )
-
     runs-on: ubuntu-latest
 
     steps:
@@ -51,6 +53,10 @@ jobs:
 
   site-deploy:
     needs: build
+    # allow single site deploy at a time, deploys from subsequent commits wait in queue
+    concurrency:
+      group: ${{ github.workflow }}-site-deploy
+      cancel-in-progress: false
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository_owner == 'apache'
 
     permissions:
