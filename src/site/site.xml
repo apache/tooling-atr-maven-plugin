@@ -37,7 +37,8 @@ under the License.
       <topBarEnabled>true</topBarEnabled>
       <topBarContainerStyle>width: 90%;</topBarContainerStyle>
       <topBarIcon>
-        <src>https://releases.apache.org/static/svg/atr_logo.svg</src>
+        <!-- local copy, releases.apache.org does not allow cross-origin use of its resources -->
+        <src>images/atr_logo.svg</src>
         <href>https://releases.apache.org/docs/</href>
       </topBarIcon>
       <!-- skip generation date in output files to avoid unnecessary changes in the generated site -->
