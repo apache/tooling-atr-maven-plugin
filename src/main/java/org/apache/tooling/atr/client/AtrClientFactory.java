@@ -19,6 +19,7 @@
 package org.apache.tooling.atr.client;
 
 import java.net.URL;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Factory for creating ATR clients.
@@ -36,9 +37,10 @@ public interface AtrClientFactory {
      * Create a new ATR client.
      *
      * @param baseUrl the base URL of the ATR server
-     * @param serverId the server ID from settings.xml containing the credentials for the ATR server
+     * @param username the ASF user ID
+     * @param pat the ATR Personal Access Token (PAT)
+     * @param jwtCache the reference for caching JWT across clients
      * @return the ATR client
-     * @throws AtrClientException if the client cannot be created
      */
-    AtrClient createAtrClient(URL baseUrl, String serverId) throws AtrClientException;
+    AtrClient createAtrClient(URL baseUrl, String username, String pat, AtomicReference<String> jwtCache);
 }

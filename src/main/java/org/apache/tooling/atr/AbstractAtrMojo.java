@@ -19,8 +19,6 @@
 package org.apache.tooling.atr;
 
 import java.net.URL;
-import java.util.Comparator;
-import java.util.List;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -29,7 +27,6 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.tooling.atr.client.AtrClient;
 import org.apache.tooling.atr.client.AtrClientException;
-import org.apache.tooling.atr.client.AtrClientFactory;
 
 /**
  * Abstract base class for ATR Mojos.
@@ -98,16 +95,11 @@ public abstract class AbstractAtrMojo extends AbstractMojo {
 
     private final MavenProject mavenProject;
 
-    private final AtrClientFactory atrClientFactory;
+    private final AtrClientProvider atrClientProvider;
 
-    protected AbstractAtrMojo(MavenProject mavenProject, List<AtrClientFactory> atrClientFactory) {
+    AbstractAtrMojo(MavenProject mavenProject, AtrClientProvider atrClientProvider) {
         this.mavenProject = mavenProject;
-        // in test environments, there may be multiple AtrClientFactory implementations,
-        // e.g., the default AtrClientFactoryImpl and a mock implementation,
-        // so we select the one with the highest priority
-        this.atrClientFactory = atrClientFactory.stream()
-                .max(Comparator.comparingInt(AtrClientFactory::priority))
-                .orElseThrow(() -> new IllegalStateException("No AtrClientFactory implementation found"));
+        this.atrClientProvider = atrClientProvider;
     }
 
     @Override
@@ -133,10 +125,9 @@ public abstract class AbstractAtrMojo extends AbstractMojo {
      * Create an ATR client with JWT caching support.
      *
      * @return the ATR client
-     * @throws AtrClientException if client creation fails
      */
-    protected AtrClient createAtrClient() throws AtrClientException {
-        return atrClientFactory.createAtrClient(url, serverId);
+    protected AtrClient createAtrClient() {
+        return atrClientProvider.createAtrClient(url, serverId);
     }
 
     /**

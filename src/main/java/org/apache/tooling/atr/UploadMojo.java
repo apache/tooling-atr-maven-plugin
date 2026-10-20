@@ -21,7 +21,6 @@ package org.apache.tooling.atr;
 import javax.inject.Inject;
 
 import java.nio.file.Path;
-import java.util.List;
 
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -29,7 +28,6 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.tooling.atr.client.AtrClient;
 import org.apache.tooling.atr.client.AtrClientException;
-import org.apache.tooling.atr.client.AtrClientFactory;
 import org.codehaus.plexus.util.FileUtils;
 
 /**
@@ -56,8 +54,8 @@ public class UploadMojo extends AbstractAtrMojo {
     private String directory;
 
     @Inject
-    UploadMojo(MavenProject mavenProject, List<AtrClientFactory> atrClientFactories) {
-        super(mavenProject, atrClientFactories);
+    UploadMojo(MavenProject mavenProject, AtrClientProvider atrClientProvider) {
+        super(mavenProject, atrClientProvider);
     }
 
     @Override

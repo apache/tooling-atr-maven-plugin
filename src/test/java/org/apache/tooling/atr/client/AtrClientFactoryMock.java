@@ -18,16 +18,12 @@
  */
 package org.apache.tooling.atr.client;
 
-import javax.inject.Inject;
 import javax.inject.Named;
-import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import java.net.URL;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.maven.execution.MavenSession;
-import org.apache.maven.settings.crypto.SettingsDecrypter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,13 +34,11 @@ import org.slf4j.LoggerFactory;
  */
 @Named
 @Singleton
-class AtrClientFactoryMock extends AtrClientFactoryImpl {
+class AtrClientFactoryMock implements AtrClientFactory {
 
     private final Logger logger = LoggerFactory.getLogger(AtrClientFactoryMock.class);
 
-    @Inject
-    AtrClientFactoryMock(Provider<MavenSession> mavenSessionProvider, SettingsDecrypter settingsDecrypter) {
-        super(mavenSessionProvider, settingsDecrypter);
+    AtrClientFactoryMock() {
         logger.info("[Mock ATR client factory] created");
     }
 
@@ -54,7 +48,7 @@ class AtrClientFactoryMock extends AtrClientFactoryImpl {
     }
 
     @Override
-    protected AtrClient newAtrClient(URL baseUrl, String username, String password, AtomicReference<String> jwtCache) {
-        return new AtrClientMock(baseUrl, username, password, jwtCache);
+    public AtrClient createAtrClient(URL baseUrl, String username, String pat, AtomicReference<String> jwtCache) {
+        return new AtrClientMock(baseUrl, username, pat, jwtCache);
     }
 }

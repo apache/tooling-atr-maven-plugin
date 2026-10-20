@@ -20,8 +20,6 @@ package org.apache.tooling.atr;
 
 import javax.inject.Inject;
 
-import java.util.List;
-
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -29,7 +27,6 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.tooling.atr.client.AtrClient;
 import org.apache.tooling.atr.client.AtrClientException;
-import org.apache.tooling.atr.client.AtrClientFactory;
 
 /**
  * Check if a version exists in ATR and is being composed (in draft phase).
@@ -49,8 +46,8 @@ public class CheckComposingMojo extends AbstractAtrMojo {
     private boolean createVersion;
 
     @Inject
-    CheckComposingMojo(MavenProject mavenProject, List<AtrClientFactory> atrClientFactories) {
-        super(mavenProject, atrClientFactories);
+    CheckComposingMojo(MavenProject mavenProject, AtrClientProvider atrClientProvider) {
+        super(mavenProject, atrClientProvider);
     }
 
     @Override

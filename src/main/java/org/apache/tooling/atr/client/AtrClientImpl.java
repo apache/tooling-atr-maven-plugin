@@ -45,7 +45,7 @@ class AtrClientImpl implements AtrClient {
 
     private final String username;
 
-    private final String password;
+    private final String pat;
 
     private final AtomicReference<String> jwtCache;
 
@@ -57,10 +57,10 @@ class AtrClientImpl implements AtrClient {
      * @param baseUrl the base URL of the ATR server
      * @param jwtCache the reference for caching JWT across goals
      */
-    AtrClientImpl(URL baseUrl, String username, String password, AtomicReference<String> jwtCache) {
+    AtrClientImpl(URL baseUrl, String username, String pat, AtomicReference<String> jwtCache) {
         this.baseUrl = baseUrl;
         this.username = username;
-        this.password = password;
+        this.pat = pat;
         this.jwtCache = jwtCache;
         this.objectMapper = new ObjectMapper();
     }
@@ -76,9 +76,14 @@ class AtrClientImpl implements AtrClient {
             return;
         }
 
+        if (username == null || pat == null) {
+            throw new AtrClientException(
+                    "Missing ATR credentials: username (ASF user ID) and PAT (Personal Access Token) are required");
+        }
+
         try {
             // Create JWT request
-            JwtCreateRequest request = new JwtCreateRequest(username, password);
+            JwtCreateRequest request = new JwtCreateRequest(username, pat);
 
             // Execute POST request
             JwtCreateResponse jwtCreateResponse = executePost("api/jwt/create", request, JwtCreateResponse.class);
