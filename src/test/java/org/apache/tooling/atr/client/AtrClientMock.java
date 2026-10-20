@@ -34,7 +34,7 @@ class AtrClientMock implements AtrClient {
 
     private final Logger logger = LoggerFactory.getLogger(AtrClientMock.class);
 
-    public AtrClientMock(URL baseUrl, String username, String password, AtomicReference<String> jwtCache) {
+    public AtrClientMock(URL baseUrl, String username, String pat, AtomicReference<String> jwtCache) {
         String jwtCacheValue = jwtCache.get();
         if (jwtCacheValue != null) {
             logger.info("[Mock ATR client] using cached JWT: {}", jwtCacheValue);
@@ -43,7 +43,7 @@ class AtrClientMock implements AtrClient {
             jwtCache.set("mock-jwt-" + username);
         }
 
-        logger.info("[Mock ATR client] created base URL: {}, username: {}, password: {}", baseUrl, username, password);
+        logger.info("[Mock ATR client] created base URL: {}, username: {}, pat: {}", baseUrl, username, pat);
     }
 
     @Override

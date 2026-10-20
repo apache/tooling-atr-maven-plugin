@@ -31,6 +31,8 @@ import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
@@ -57,8 +59,7 @@ class AtrClientImplTest {
 
     @BeforeEach
     void setup(WireMockRuntimeInfo wmRuntimeInfo) throws Exception {
-        atrClient =
-                new AtrClientImpl(new URL(wmRuntimeInfo.getHttpBaseUrl()), "user", "password", new AtomicReference<>());
+        atrClient = new AtrClientImpl(new URL(wmRuntimeInfo.getHttpBaseUrl()), "user", "pat", new AtomicReference<>());
     }
 
     @Test
@@ -89,7 +90,23 @@ class AtrClientImplTest {
         verify(
                 1,
                 postRequestedFor(urlEqualTo("/api/jwt/create"))
-                        .withRequestBody(equalTo("{\"asfuid\":\"user\",\"pat\":\"password\"}")));
+                        .withRequestBody(equalTo("{\"asfuid\":\"user\",\"pat\":\"pat\"}")));
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+            value = {"user, null", "null, pat", "null, null"},
+            nullValues = "null")
+    void missingCredentialsShouldThrowException(String username, String pat, WireMockRuntimeInfo wmRuntimeInfo)
+            throws Exception {
+        AtrClient client =
+                new AtrClientImpl(new URL(wmRuntimeInfo.getHttpBaseUrl()), username, pat, new AtomicReference<>());
+
+        AtrClientException exception =
+                assertThrows(AtrClientException.class, () -> client.getRelease("test-project", "1.0.0"));
+
+        assertTrue(exception.getMessage().startsWith("Missing ATR credentials"));
+        verify(0, postRequestedFor(urlEqualTo("/api/jwt/create")));
     }
 
     @Test
