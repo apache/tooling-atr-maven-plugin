@@ -57,7 +57,7 @@ public interface AtrClient {
      * @param version the version
      * @param path the relative path within the release (e.g., "artifactId-version-source-release.zip")
      * @param file the file to upload
-     * @return the revision number
+     * @return the revision number, "quarantined" if the archive validation is in progress
      * @throws AtrClientException if the upload fails
      */
     String uploadFile(String project, String version, String path, Path file) throws AtrClientException;
@@ -99,47 +99,13 @@ public interface AtrClient {
         }
     }
 
-    class ReleaseUploadRequest {
-        @JsonProperty("project")
-        private String project;
-
-        @JsonProperty("version")
-        private String version;
-
-        @JsonProperty("relpath")
-        private String relpath;
-
-        @JsonProperty("content")
-        private String content;
-
-        ReleaseUploadRequest(String project, String version, String relpath, String content) {
-            this.project = project;
-            this.version = version;
-            this.relpath = relpath;
-            this.content = content;
-        }
-
-        public String getProject() {
-            return project;
-        }
-
-        public String getVersion() {
-            return version;
-        }
-
-        public String getRelpath() {
-            return relpath;
-        }
-
-        public String getContent() {
-            return content;
-        }
-    }
-
     @JsonIgnoreProperties(ignoreUnknown = true)
-    class ReleaseUploadResponse {
+    class ReleaseStoreResponse {
         @JsonProperty("endpoint")
         private String endpoint;
+
+        @JsonProperty("quarantined")
+        private boolean quarantined;
 
         @JsonProperty("revision")
         private Revision revision;
@@ -150,6 +116,14 @@ public interface AtrClient {
 
         public void setEndpoint(String endpoint) {
             this.endpoint = endpoint;
+        }
+
+        public boolean isQuarantined() {
+            return quarantined;
+        }
+
+        public void setQuarantined(boolean quarantined) {
+            this.quarantined = quarantined;
         }
 
         public Revision getRevision() {

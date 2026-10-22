@@ -23,7 +23,6 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Base64;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
@@ -44,6 +43,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -209,7 +209,7 @@ class AtrClientImplTest {
         Path testFile = tempDir.resolve("test-file.txt");
         Files.write(testFile, "Test content".getBytes());
 
-        stubFor(post(urlEqualTo("/api/release/upload"))
+        stubFor(post(urlPathEqualTo("/api/release/store"))
                 .withHeader("Authorization", equalTo("Bearer test-jwt"))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
@@ -228,27 +228,48 @@ class AtrClientImplTest {
         Path testFile = tempDir.resolve("test-artifact.zip");
         String testContent = "Binary file content";
         Files.write(testFile, testContent.getBytes());
-        String expectedBase64 = Base64.getEncoder().encodeToString(testContent.getBytes());
 
-        stubFor(post(urlEqualTo("/api/release/upload"))
+        stubFor(post(urlPathEqualTo("/api/release/store"))
                 .withHeader("Authorization", equalTo("Bearer test-jwt"))
                 .willReturn(aResponse()
+                        .withStatus(201)
                         .withHeader("Content-Type", "application/json")
-                        .withBody("{\"endpoint\":\"test-endpoint\",\"revision\":{" + "  \"number\":\"42\"}}")));
+                        .withBody("{\"endpoint\":\"/release/store\",\"quarantined\":false,"
+                                + "\"revision\":{\"number\":\"42\"}}")));
 
         String revision = atrClient.uploadFile("my-project", "2.0.0", "release/test-artifact.zip", testFile);
 
-        // Verify the request body contains all required JSON fields with correct values
+        // Verify the query parameters and the raw file content in the request body
         verify(
                 1,
-                postRequestedFor(urlEqualTo("/api/release/upload"))
+                postRequestedFor(urlPathEqualTo("/api/release/store"))
                         .withHeader("Authorization", equalTo("Bearer test-jwt"))
-                        .withRequestBody(matchingJsonPath("$.project", equalTo("my-project")))
-                        .withRequestBody(matchingJsonPath("$.version", equalTo("2.0.0")))
-                        .withRequestBody(matchingJsonPath("$.relpath", equalTo("release/test-artifact.zip")))
-                        .withRequestBody(matchingJsonPath("$.content", equalTo(expectedBase64))));
+                        .withHeader("Content-Type", equalTo("application/octet-stream"))
+                        .withQueryParam("project", equalTo("my-project"))
+                        .withQueryParam("version", equalTo("2.0.0"))
+                        .withQueryParam("relpath", equalTo("release/test-artifact.zip"))
+                        .withRequestBody(equalTo(testContent)));
 
         assertEquals("42", revision);
+    }
+
+    @Test
+    void uploadFileShouldReturnQuarantined(@TempDir Path tempDir) throws Exception {
+        stubForJwtCreate();
+
+        Path testFile = tempDir.resolve("test-artifact.zip");
+        Files.write(testFile, "Archive content".getBytes());
+
+        stubFor(post(urlPathEqualTo("/api/release/store"))
+                .withHeader("Authorization", equalTo("Bearer test-jwt"))
+                .willReturn(aResponse()
+                        .withStatus(202)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("{\"endpoint\":\"/release/store\",\"quarantined\":true,\"revision\":null}")));
+
+        String revision = atrClient.uploadFile("my-project", "2.0.0", "test-artifact.zip", testFile);
+
+        assertEquals("quarantined", revision);
     }
 
     @Test
@@ -271,7 +292,7 @@ class AtrClientImplTest {
         Path testFile = tempDir.resolve("test-file.txt");
         Files.write(testFile, "Test content".getBytes());
 
-        stubFor(post(urlEqualTo("/api/release/upload"))
+        stubFor(post(urlPathEqualTo("/api/release/store"))
                 .withHeader("Authorization", equalTo("Bearer test-jwt"))
                 .willReturn(aResponse().withStatus(500).withBody("{\"error\": \"Server error\"}")));
 
@@ -290,7 +311,7 @@ class AtrClientImplTest {
         Path testFile = tempDir.resolve("test-file.txt");
         Files.write(testFile, "Test content".getBytes());
 
-        stubFor(post(urlEqualTo("/api/release/upload"))
+        stubFor(post(urlPathEqualTo("/api/release/store"))
                 .withHeader("Authorization", equalTo("Bearer test-jwt"))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
@@ -304,7 +325,7 @@ class AtrClientImplTest {
 
         // Verify that JWT was only created once and uploads were performed twice
         verify(1, postRequestedFor(urlEqualTo("/api/jwt/create")));
-        verify(2, postRequestedFor(urlEqualTo("/api/release/upload")));
+        verify(2, postRequestedFor(urlPathEqualTo("/api/release/store")));
     }
 
     private void stubForJwtCreate() {
