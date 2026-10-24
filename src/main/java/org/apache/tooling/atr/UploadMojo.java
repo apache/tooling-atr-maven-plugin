@@ -20,12 +20,21 @@ package org.apache.tooling.atr;
 
 import javax.inject.Inject;
 
+import java.io.File;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.Optional;
 
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.scm.ScmException;
+import org.apache.maven.scm.ScmFileSet;
+import org.apache.maven.scm.command.info.InfoItem;
+import org.apache.maven.scm.command.info.InfoScmResult;
+import org.apache.maven.scm.manager.ScmManager;
+import org.apache.maven.scm.repository.ScmRepository;
 import org.apache.tooling.atr.client.AtrClient;
 import org.apache.tooling.atr.client.AtrClientException;
 import org.codehaus.plexus.util.FileUtils;
@@ -53,9 +62,12 @@ public class UploadMojo extends AbstractAtrMojo {
     @Parameter(property = "atr.directory")
     private String directory;
 
+    private final ScmManager scmManager;
+
     @Inject
-    UploadMojo(MavenProject mavenProject, AtrClientProvider atrClientProvider) {
+    UploadMojo(MavenProject mavenProject, AtrClientProvider atrClientProvider, ScmManager scmManager) {
         super(mavenProject, atrClientProvider);
+        this.scmManager = scmManager;
     }
 
     @Override
@@ -65,6 +77,8 @@ public class UploadMojo extends AbstractAtrMojo {
         } else {
             getLog().info("Uploading " + files.length + " files to ATR " + url + "compose/" + project + "/" + version);
         }
+
+        logSourceCommit();
 
         AtrClient client = createAtrClient();
 
@@ -96,6 +110,58 @@ public class UploadMojo extends AbstractAtrMojo {
         String revisionNumber = client.uploadFile(project, version, target, file);
 
         getLog().info("    upload successful, revision: " + revisionNumber);
+    }
+
+    /**
+     * Log the source commit of the project.
+     */
+    private void logSourceCommit() {
+        getLog().info("Source commit: " + getSourceCommit().orElse("unknown"));
+    }
+
+    /**
+     * Get the source commit (SCM revision) of the project base directory.
+     *
+     * @return the source commit, or empty if it can not be determined
+     */
+    private Optional<String> getSourceCommit() {
+        File basedir = getMavenProject().getBasedir();
+        Optional<ScmRepository> repository = findScmRepository();
+        if (!repository.isPresent()) {
+            getLog().warn(basedir + " is not in a SCM working directory");
+            return Optional.empty();
+        }
+
+        try {
+            InfoScmResult result = scmManager
+                    .getProviderByRepository(repository.get())
+                    .info(repository.get().getProviderRepository(), new ScmFileSet(basedir), null);
+            List<InfoItem> infoItems = result.getInfoItems();
+            if (!result.isSuccess() || infoItems.isEmpty()) {
+                getLog().warn("Can not get SCM info: " + result.getProviderMessage());
+                return Optional.empty();
+            }
+            return Optional.ofNullable(infoItems.get(0).getRevision());
+        } catch (ScmException e) {
+            getLog().warn("Can not get SCM info: " + e.getMessage(), e);
+            return Optional.empty();
+        }
+    }
+
+    /**
+     * Find the SCM repository of the project, also looking in the base directories of local parent projects,
+     * as the SCM working directory root (e.g. <code>.git</code>) may be in one of them.
+     *
+     * @return the SCM repository, or empty if none found
+     */
+    private Optional<ScmRepository> findScmRepository() {
+        for (MavenProject p = getMavenProject(); p != null && p.getBasedir() != null; p = p.getParent()) {
+            Optional<ScmRepository> repository = scmManager.makeProviderScmRepository(p.getBasedir());
+            if (repository.isPresent()) {
+                return repository;
+            }
+        }
+        return Optional.empty();
     }
 
     /**

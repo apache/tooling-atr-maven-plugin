@@ -122,6 +122,15 @@ public abstract class AbstractAtrMojo extends AbstractMojo {
     }
 
     /**
+     * Get the current Maven project.
+     *
+     * @return the Maven project
+     */
+    protected MavenProject getMavenProject() {
+        return mavenProject;
+    }
+
+    /**
      * Create an ATR client with JWT caching support.
      *
      * @return the ATR client
