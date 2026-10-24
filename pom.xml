@@ -107,6 +107,7 @@ under the License.
     <version.spotless-maven-plugin>3.10.4</version.spotless-maven-plugin>
     <version.palantirJavaFormat>2.102.0</version.palantirJavaFormat>
     <version.slf4j>1.7.36</version.slf4j>
+    <version.maven-scm>2.2.1</version.maven-scm>
 
     <spotless.action>apply</spotless.action>
 
@@ -190,6 +191,21 @@ under the License.
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-utils</artifactId>
       <version>4.1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.scm</groupId>
+      <artifactId>maven-scm-api</artifactId>
+      <version>${version.maven-scm}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.scm</groupId>
+      <artifactId>maven-scm-manager-plexus</artifactId>
+      <version>${version.maven-scm}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.scm</groupId>
+      <artifactId>maven-scm-provider-gitexe</artifactId>
+      <version>${version.maven-scm}</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
