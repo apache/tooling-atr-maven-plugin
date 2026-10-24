@@ -521,23 +521,21 @@ under the License.
       <build>
         <plugins>
           <plugin>
-            <groupId>net.nicoulaj.maven.plugins</groupId>
-            <artifactId>checksum-maven-plugin</artifactId>
-            <version>${version.checksum-maven-plugin}</version>
+            <groupId>eu.maveniverse.maven.plugins</groupId>
+            <artifactId>checksum-plugin3</artifactId>
             <executions>
               <execution>
                 <id>cyclonedx-checksum</id>
                 <goals>
-                  <goal>artifacts</goal>
+                  <goal>project</goal>
                 </goals>
                 <phase>post-integration-test</phase>
                 <configuration>
-                  <algorithms>
-                    <algorithm>SHA-512</algorithm>
-                  </algorithms>
-                  <includeClassifiers>cyclonedx</includeClassifiers>
-                  <excludeMainArtifact>true</excludeMainArtifact>
-                  <csvSummary>false</csvSummary>
+                  <alg>SHA-512</alg>
+                  <attach>false</attach>
+                  <includedClassifiers>
+                    <includedClassifier>cyclonedx</includedClassifier>
+                  </includedClassifiers>
                 </configuration>
               </execution>
             </executions>
@@ -545,7 +543,6 @@ under the License.
           <plugin>
             <groupId>org.apache.tooling</groupId>
             <artifactId>atr-maven-plugin</artifactId>
-            <version>1.0.0-alpha-1</version>
             <configuration>
               <project>tooling-atr-maven-plugin</project>
               <!-- ${project.artifactId} default value does not match our need -->
@@ -553,21 +550,10 @@ under the License.
             </configuration>
             <executions>
               <execution>
-                <id>atr-check-composing</id>
-                <goals>
-                  <goal>check-composing</goal>
-                </goals>
-              </execution>
-              <execution>
                 <id>upload-to-atr</id>
-                <goals>
-                  <goal>upload</goal>
-                </goals>
                 <configuration>
-                  <files>
-                    <file>${project.build.directory}/${project.artifactId}-${project.version}-source-release.zip</file>
-                    <file>${project.build.directory}/${project.artifactId}-${project.version}-source-release.zip.sha512</file>
-                    <file>${project.build.directory}/${project.artifactId}-${project.version}-source-release.zip.asc</file>
+                  <!-- source release files are configured in ASF parent POM -->
+                  <files combine.children="append">
                     <file>${project.build.directory}/${project.artifactId}-${project.version}-cyclonedx.json</file>
                     <file>${project.build.directory}/${project.artifactId}-${project.version}-cyclonedx.json.sha512</file>
                     <file>${project.build.directory}/${project.artifactId}-${project.version}-cyclonedx.json.asc</file>
