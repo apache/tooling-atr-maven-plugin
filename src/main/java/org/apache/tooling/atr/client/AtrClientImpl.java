@@ -21,11 +21,12 @@ package org.apache.tooling.atr.client;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Base64;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -145,7 +146,7 @@ class AtrClientImpl implements AtrClient {
      * @param version the version
      * @param path the relative path within the release (e.g., "artifactId-version-source-release.zip")
      * @param file the file to upload
-     * @return the revision number
+     * @return the revision number, "quarantined" if the archive validation is in progress
      * @throws AtrClientException if the upload fails
      */
     @Override
@@ -154,16 +155,15 @@ class AtrClientImpl implements AtrClient {
         ensureJwt();
 
         try {
-            // Read file content and encode as base64
-            byte[] fileBytes = Files.readAllBytes(file);
-            String content = Base64.getEncoder().encodeToString(fileBytes);
+            // Metadata is passed in the query string, the request body is the raw file content
+            String url = "api/release/store?project=" + encode(project) + "&version=" + encode(version) + "&relpath="
+                    + encode(path);
 
-            // Create upload request
-            ReleaseUploadRequest request = new ReleaseUploadRequest(project, version, path, content);
+            ReleaseStoreResponse response = executePostFile(url, file, ReleaseStoreResponse.class);
 
-            // Execute POST request
-            ReleaseUploadResponse response = executePost("api/release/upload", request, ReleaseUploadResponse.class);
-
+            if (response.isQuarantined()) {
+                return "quarantined";
+            }
             return response.getRevision() != null ? response.getRevision().getNumber() : "unknown";
         } catch (IOException e) {
             throw new AtrClientException("Failed to upload file to ATR: " + file, e);
@@ -208,6 +208,34 @@ class AtrClientImpl implements AtrClient {
             objectMapper.writeValue(os, requestData);
         }
 
+        return readPostResponse(conn, uploadUrl, responseClass);
+    }
+
+    private <T> T executePostFile(String url, Path file, Class<T> responseClass)
+            throws IOException, AtrClientException {
+
+        // Create connection
+        URL uploadUrl = new URL(baseUrl, url);
+        HttpURLConnection conn = (HttpURLConnection) uploadUrl.openConnection();
+        conn.setRequestMethod("POST");
+        conn.setRequestProperty("Content-Type", "application/octet-stream");
+        if (jwtCache.get() != null) {
+            conn.setRequestProperty("Authorization", "Bearer " + jwtCache.get());
+        }
+        conn.setDoOutput(true);
+        // Stream the file instead of buffering it in memory
+        conn.setFixedLengthStreamingMode(Files.size(file));
+
+        // Send request
+        try (OutputStream os = conn.getOutputStream()) {
+            Files.copy(file, os);
+        }
+
+        return readPostResponse(conn, uploadUrl, responseClass);
+    }
+
+    private <T> T readPostResponse(HttpURLConnection conn, URL uploadUrl, Class<T> responseClass)
+            throws IOException, AtrClientException {
         // Check response
         int responseCode = conn.getResponseCode();
         if (responseCode == HttpURLConnection.HTTP_OK
@@ -218,6 +246,10 @@ class AtrClientImpl implements AtrClient {
             String errorResponse = readErrorResponse(conn.getErrorStream());
             throw new AtrClientException(responseCode, errorResponse, "POST", uploadUrl);
         }
+    }
+
+    private static String encode(String value) throws UnsupportedEncodingException {
+        return URLEncoder.encode(value, "UTF-8");
     }
 
     private String readErrorResponse(InputStream is) throws IOException {
