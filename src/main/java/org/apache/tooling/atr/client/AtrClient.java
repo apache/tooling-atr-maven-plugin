@@ -31,6 +31,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public interface AtrClient {
 
     /**
+     * Get project information from ATR.
+     *
+     * @param project the project id
+     * @return the project information, or null if the project does not exist
+     * @throws AtrClientException if the check fails
+     */
+    ProjectInfo getProject(String project) throws AtrClientException;
+
+    /**
      * Check if a version exists in ATR and get its release information.
      *
      * @param project the project id
@@ -179,6 +188,67 @@ public interface AtrClient {
 
         public void setReleaseName(String releaseName) {
             this.releaseName = releaseName;
+        }
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    class ProjectResponse {
+        @JsonProperty("endpoint")
+        private String endpoint;
+
+        @JsonProperty("project")
+        private ProjectInfo project;
+
+        public String getEndpoint() {
+            return endpoint;
+        }
+
+        public void setEndpoint(String endpoint) {
+            this.endpoint = endpoint;
+        }
+
+        public ProjectInfo getProject() {
+            return project;
+        }
+
+        public void setProject(ProjectInfo project) {
+            this.project = project;
+        }
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    class ProjectInfo {
+        @JsonProperty("key")
+        private String key;
+
+        @JsonProperty("name")
+        private String name;
+
+        @JsonProperty("status")
+        private String status;
+
+        public String getKey() {
+            return key;
+        }
+
+        public void setKey(String key) {
+            this.key = key;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getStatus() {
+            return status;
+        }
+
+        public void setStatus(String status) {
+            this.status = status;
         }
     }
 

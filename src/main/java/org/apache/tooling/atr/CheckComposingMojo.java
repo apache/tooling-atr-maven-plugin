@@ -66,6 +66,12 @@ public class CheckComposingMojo extends AbstractAtrMojo {
         AtrClient client = createAtrClient();
         AtrClient.ReleaseInfo releaseInfo = client.getRelease(project, version);
 
+        if (releaseInfo == null && client.getProject(project) == null) {
+            getLog().error("Project does not exist in ATR: " + project + System.lineSeparator() + "       See " + url
+                    + "projects for available projects");
+            throw new MojoFailureException("Project does not exist in ATR: " + project);
+        }
+
         if (releaseInfo == null && createVersion) {
             getLog().info("Version does not exist in ATR, creating new version: " + project + " " + version);
             releaseInfo = client.createRelease(project, version);

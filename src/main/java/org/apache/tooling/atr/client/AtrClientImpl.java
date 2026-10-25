@@ -98,6 +98,24 @@ class AtrClientImpl implements AtrClient {
         }
     }
 
+    @Override
+    public ProjectInfo getProject(String project) throws AtrClientException {
+        // Ensure we have a valid JWT
+        ensureJwt();
+
+        try {
+            ProjectResponse projectResponse = executeGet("api/project/get/" + project, ProjectResponse.class);
+            return projectResponse.getProject();
+        } catch (AtrClientException e) {
+            if (e.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND) {
+                return null;
+            }
+            throw e;
+        } catch (IOException e) {
+            throw new AtrClientException("Failed to get project in ATR: " + project, e);
+        }
+    }
+
     /**
      * Check if a version exists in ATR and get its release information.
      *
