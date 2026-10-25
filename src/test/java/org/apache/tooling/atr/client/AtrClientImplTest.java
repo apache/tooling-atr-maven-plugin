@@ -123,6 +123,39 @@ class AtrClientImplTest {
     }
 
     @Test
+    void getProjectShouldBeReturned() throws Exception {
+        stubForJwtCreate();
+
+        stubFor(get(urlEqualTo("/api/project/get/test-project"))
+                .withHeader("Authorization", equalTo("Bearer test-jwt"))
+                .willReturn(aResponse()
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("{\"project\":{"
+                                + "  \"key\":\"test-project\","
+                                + "  \"name\":\"Test Project\""
+                                + "}}")));
+
+        AtrClient.ProjectInfo project = atrClient.getProject("test-project");
+
+        assertNotNull(project);
+        assertEquals("test-project", project.getKey());
+        assertEquals("Test Project", project.getName());
+    }
+
+    @Test
+    void unfoundProjectShouldReturnNull() throws Exception {
+        stubForJwtCreate();
+
+        stubFor(get(urlEqualTo("/api/project/get/test-project"))
+                .withHeader("Authorization", equalTo("Bearer test-jwt"))
+                .willReturn(notFound()));
+
+        AtrClient.ProjectInfo project = atrClient.getProject("test-project");
+
+        assertNull(project);
+    }
+
+    @Test
     void serverErrorShouldThrowException() {
         stubForJwtCreate();
 
