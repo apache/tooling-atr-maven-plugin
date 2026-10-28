@@ -137,6 +137,51 @@ class AtrClientImplTest {
     }
 
     @Test
+    void setSourceCommitShouldSendCorrectPayload() throws Exception {
+        stubForJwtCreate();
+
+        stubFor(post(urlEqualTo("/api/release/commit"))
+                .withHeader("Authorization", equalTo("Bearer test-jwt"))
+                .willReturn(aResponse()
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("{\"endpoint\":\"/release/commit\",\"release\":{"
+                                + "  \"version\":\"2.0.0\","
+                                + "  \"phase\":\"release_candidate_draft\""
+                                + "}}")));
+
+        AtrClient.ReleaseInfo release =
+                atrClient.setSourceCommit("my-project", "2.0.0", "0123456789abcdef0123456789abcdef01234567");
+
+        assertNotNull(release);
+        assertEquals("2.0.0", release.getVersion());
+
+        verify(
+                1,
+                postRequestedFor(urlEqualTo("/api/release/commit"))
+                        .withHeader("Authorization", equalTo("Bearer test-jwt"))
+                        .withHeader("Content-Type", equalTo("application/json"))
+                        .withRequestBody(matchingJsonPath("$.project", equalTo("my-project")))
+                        .withRequestBody(matchingJsonPath("$.version", equalTo("2.0.0")))
+                        .withRequestBody(
+                                matchingJsonPath("$.commit", equalTo("0123456789abcdef0123456789abcdef01234567"))));
+    }
+
+    @Test
+    void setSourceCommitServerErrorShouldThrowException() {
+        stubForJwtCreate();
+
+        stubFor(post(urlEqualTo("/api/release/commit"))
+                .withHeader("Authorization", equalTo("Bearer test-jwt"))
+                .willReturn(aResponse().withStatus(400).withBody("{\"error\": \"Invalid commit\"}")));
+
+        AtrClientException exception = assertThrows(
+                AtrClientException.class,
+                () -> atrClient.setSourceCommit("test-project", "1.0.0", "0123456789abcdef0123456789abcdef01234567"));
+
+        assertTrue(exception.getMessage().contains("\"Invalid commit\""));
+    }
+
+    @Test
     void createReleaseShouldSendCorrectPayload() throws Exception {
         stubForJwtCreate();
 

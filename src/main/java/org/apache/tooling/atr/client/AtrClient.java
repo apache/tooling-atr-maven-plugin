@@ -51,6 +51,17 @@ public interface AtrClient {
     ReleaseInfo createRelease(String project, String version) throws AtrClientException;
 
     /**
+     * Record the source commit the release was built from.
+     *
+     * @param project the project id
+     * @param version the version
+     * @param commit the source commit (full Git commit hash)
+     * @return the release information
+     * @throws AtrClientException if recording the source commit fails
+     */
+    ReleaseInfo setSourceCommit(String project, String version, String commit) throws AtrClientException;
+
+    /**
      * Upload a file to ATR.
      *
      * @param project the project id
@@ -372,6 +383,30 @@ public interface AtrClient {
 
         public String getVersion() {
             return version;
+        }
+    }
+
+    class ReleaseCommitRequest {
+        private final String project;
+        private final String version;
+        private final String commit;
+
+        public ReleaseCommitRequest(String project, String version, String commit) {
+            this.project = project;
+            this.version = version;
+            this.commit = commit;
+        }
+
+        public String getProject() {
+            return project;
+        }
+
+        public String getVersion() {
+            return version;
+        }
+
+        public String getCommit() {
+            return commit;
         }
     }
 }
