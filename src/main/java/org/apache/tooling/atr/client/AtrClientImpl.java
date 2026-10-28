@@ -139,6 +139,21 @@ class AtrClientImpl implements AtrClient {
         }
     }
 
+    @Override
+    public ReleaseInfo setSourceCommit(String project, String version, String commit) throws AtrClientException {
+        // Ensure we have a valid JWT
+        ensureJwt();
+
+        try {
+            ReleaseCommitRequest request = new ReleaseCommitRequest(project, version, commit);
+            ReleaseResponse releaseResponse = executePost("api/release/commit", request, ReleaseResponse.class);
+            return releaseResponse.getRelease();
+        } catch (IOException e) {
+            throw new AtrClientException(
+                    "Failed to set source commit in ATR: " + project + " " + version + " " + commit, e);
+        }
+    }
+
     /**
      * Upload a file to ATR.
      *

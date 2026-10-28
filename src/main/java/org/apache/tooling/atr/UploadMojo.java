@@ -24,6 +24,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -49,6 +50,11 @@ import org.codehaus.plexus.util.FileUtils;
 public class UploadMojo extends AbstractAtrMojo {
 
     /**
+     * Format of the source commit accepted by ATR: a full SHA-1 Git commit hash.
+     */
+    private static final Pattern COMMIT_HASH_PATTERN = Pattern.compile("[0-9a-fA-F]{40}");
+
+    /**
      * The files to upload to ATR.
      * @since 1.0.0-alpha-1
      */
@@ -72,19 +78,38 @@ public class UploadMojo extends AbstractAtrMojo {
 
     @Override
     protected void atrExecute() throws AtrClientException {
+        Optional<String> sourceCommit = getSourceCommit();
+        AtrClient client = createAtrClient();
+
+        if (sourceCommit.isPresent()) {
+            setSourceCommit(client, sourceCommit.get());
+        }
+
         if (dryRun) {
             getLog().info("DRY RUN: Simulating ATR upload (no actual upload will occur)");
         } else {
             getLog().info("Uploading " + files.length + " files to ATR " + url + "compose/" + project + "/" + version);
         }
 
-        logSourceCommit();
-
-        AtrClient client = createAtrClient();
-
         for (Path file : files) {
             upload(client, file);
         }
+    }
+
+    /**
+     * Record the source commit of the release in ATR.
+     *
+     * @param client the ATR client to use
+     * @param sourceCommit the source commit of the project
+     */
+    private void setSourceCommit(AtrClient client, String sourceCommit) throws AtrClientException {
+        if (dryRun) {
+            getLog().info("DRY RUN: Would set source commit: " + sourceCommit);
+            return;
+        }
+
+        client.setSourceCommit(project, version, sourceCommit);
+        getLog().info("Source commit set in ATR: " + sourceCommit);
     }
 
     /**
@@ -113,16 +138,10 @@ public class UploadMojo extends AbstractAtrMojo {
     }
 
     /**
-     * Log the source commit of the project.
-     */
-    private void logSourceCommit() {
-        getLog().info("Source commit: " + getSourceCommit().orElse("unknown"));
-    }
-
-    /**
      * Get the source commit (SCM revision) of the project base directory.
+     * Only a full SHA-1 Git commit hash is returned, as ATR does not accept other formats.
      *
-     * @return the source commit, or empty if it can not be determined
+     * @return the source commit, or empty if it can not be determined or is not a Git commit hash
      */
     private Optional<String> getSourceCommit() {
         File basedir = getMavenProject().getBasedir();
@@ -141,7 +160,17 @@ public class UploadMojo extends AbstractAtrMojo {
                 getLog().warn("Can not get SCM info: " + result.getProviderMessage());
                 return Optional.empty();
             }
-            return Optional.ofNullable(infoItems.get(0).getRevision());
+            String revision = infoItems.get(0).getRevision();
+            if (revision == null) {
+                getLog().warn("SCM info does not contain a revision");
+                return Optional.empty();
+            }
+            if (!COMMIT_HASH_PATTERN.matcher(revision).matches()) {
+                getLog().warn("Source commit '" + revision
+                        + "' is not a 40 character Git commit hash, it will not be sent to ATR");
+                return Optional.empty();
+            }
+            return Optional.of(revision);
         } catch (ScmException e) {
             getLog().warn("Can not get SCM info: " + e.getMessage(), e);
             return Optional.empty();
