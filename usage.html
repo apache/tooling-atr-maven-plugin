@@ -120,57 +120,8 @@
   -Datr.files=target/apache-maven-4.0.0-src.tar.gz,target/apache-maven-4.0.0-src.tar.gz.sha512
 </code></pre></section><section><a id="Integration_ATR_plugin_with_the_push-to-atr_profile"></a>
 <h2>Integration ATR plugin with the push-to-atr profile</h2>
-<p>The typical use case is to integrate the ATR plugin into a <code>push-to-atr</code> profile that will be used optionally with <code>apache-release</code> profile:</p>
-
-<pre class="prettyprint linenums"><code class="language-xml">&lt;project&gt;
-  ...
-  &lt;build&gt;
-    &lt;plugins&gt;
-      &lt;plugin&gt;
-        &lt;groupId&gt;org.apache.tooling&lt;/groupId&gt;
-        &lt;artifactId&gt;atr-maven-plugin&lt;/artifactId&gt;
-        &lt;version&gt;1.0.0-alpha-1-SNAPSHOT&lt;/version&gt;
-      &lt;/plugin&gt;
-    &lt;/plugins&gt;
-  &lt;/build&gt;
-
-  &lt;profiles&gt;
-    &lt;profile&gt;
-      &lt;id&gt;push-to-atr&lt;/id&gt;
-      &lt;build&gt;
-        &lt;plugins&gt;
-          &lt;plugin&gt;
-            &lt;groupId&gt;org.apache.tooling&lt;/groupId&gt;
-            &lt;artifactId&gt;atr-maven-plugin&lt;/artifactId&gt;
-            &lt;executions&gt;
-              &lt;execution&gt;
-                &lt;id&gt;atr-check-composing&lt;/id&gt;
-                &lt;goals&gt;
-                  &lt;goal&gt;check-composing&lt;/goal&gt;
-                &lt;/goals&gt;
-              &lt;/execution&gt;
-              &lt;execution&gt;
-                &lt;id&gt;upload-to-atr&lt;/id&gt;
-                &lt;goals&gt;
-                  &lt;goal&gt;upload&lt;/goal&gt;
-                &lt;/goals&gt;
-                &lt;configuration&gt;
-                  &lt;files&gt;
-                    &lt;file&gt;${project.build.directory}/${project.artifactId}-${project.version}-source-release.zip&lt;/file&gt;
-                    &lt;file&gt;${project.build.directory}/${project.artifactId}-${project.version}-source-release.zip.sha512&lt;/file&gt;
-                    &lt;file&gt;${project.build.directory}/${project.artifactId}-${project.version}-source-release.zip.asc&lt;/file&gt;
-                  &lt;/files&gt;
-                &lt;/configuration&gt;
-              &lt;/execution&gt;
-            &lt;/executions&gt;
-          &lt;/plugin&gt;
-        &lt;/plugins&gt;
-      &lt;/build&gt;
-    &lt;/profile&gt;
-  &lt;/profiles&gt;
-&lt;/project&gt;
-</code></pre>
-<p>Then you can test the upload current project version by running:</p>
+<p>Since version 39, the <a href="https://maven.apache.org/pom/asf/" class="externalLink">ASF parent POM</a> provides a <a href="https://maven.apache.org/pom/asf/#The_push-to-atr_Profile" class="externalLink"><code>push-to-atr</code> profile</a>, to be used together with the <a href="https://maven.apache.org/pom/asf/#The_apache-release_Profile" class="externalLink"><code>apache-release</code> profile</a>. It runs the <code>check-composing</code> goal and uploads the source release archive with its <code>.sha512</code> and <code>.asc</code> files.</p>
+<p>If your project inherits from the ASF parent POM, you don't need to define this profile yourself. You can test the upload of the current project version by running:</p>
 
 <pre><code class="nohighlight nocode">mvn clean deploy -Papache-release,push-to-atr
 </code></pre>
@@ -180,18 +131,109 @@
 mvn release:perform -Ppush-to-atr
 </code></pre>
 <p><strong>NOTE</strong>: The <code>check-composing</code> goal will check if the version is already being composed in ATR.</p>
-<p>You need to manually create a new version in ATR service before using the <code>push-to-atr</code> profile.</p></section><section><a id="Directory_Organization"></a>
-<h2>Directory Organization</h2>
-<p>You can organize uploaded files in subdirectories:</p>
+<p>You need to manually create a new version in ATR service before using the <code>push-to-atr</code> profile, or let the <code>check-composing</code> goal create it, see <a href="#Creating_the_version_in_ATR">Creating the version in ATR</a>.</p><section><a id="Customizing_the_push-to-atr_profile"></a>
+<h3>Customizing the push-to-atr profile</h3>
+<p>The archive type of the source release is set by the <code>atr-release-type</code> property (<code>zip</code> by default).</p>
+<p>When the ATR project name differs from <code>${project.artifactId}</code>, set it in <code>pluginManagement</code>, so it is used by every execution of the plugin, also outside the profile:</p>
 
-<pre class="prettyprint linenums"><code class="language-xml">&lt;configuration&gt;
-  &lt;directory&gt;binaries&lt;/directory&gt;
-  &lt;files&gt;
-    &lt;file&gt;${project.build.directory}/${project.artifactId}-${project.version}-bin.tar.gz&lt;/file&gt;
-  &lt;/files&gt;
-&lt;/configuration&gt;
+<pre class="prettyprint linenums"><code class="language-xml">&lt;build&gt;
+  &lt;pluginManagement&gt;
+    &lt;plugins&gt;
+      &lt;plugin&gt;
+        &lt;groupId&gt;org.apache.tooling&lt;/groupId&gt;
+        &lt;artifactId&gt;atr-maven-plugin&lt;/artifactId&gt;
+        &lt;configuration&gt;
+          &lt;project&gt;my-atr-project&lt;/project&gt;
+        &lt;/configuration&gt;
+      &lt;/plugin&gt;
+    &lt;/plugins&gt;
+  &lt;/pluginManagement&gt;
+&lt;/build&gt;
 </code></pre>
-<p>This will upload the file to the compose space at: <code>binaries/</code>.</p></section></section>        </main>
+<p>The profile can be extended in your project, for example to upload additional files:</p>
+
+<pre class="prettyprint linenums"><code class="language-xml">&lt;profiles&gt;
+  &lt;profile&gt;
+    &lt;id&gt;push-to-atr&lt;/id&gt;
+    &lt;build&gt;
+      &lt;plugins&gt;
+        &lt;plugin&gt;
+          &lt;groupId&gt;org.apache.tooling&lt;/groupId&gt;
+          &lt;artifactId&gt;atr-maven-plugin&lt;/artifactId&gt;
+          &lt;executions&gt;
+            &lt;execution&gt;
+              &lt;id&gt;upload-to-atr&lt;/id&gt;
+              &lt;configuration&gt;
+                &lt;files combine.children=&quot;append&quot;&gt;
+                  &lt;file&gt;${project.build.directory}/${project.artifactId}-${project.version}-cyclonedx.json&lt;/file&gt;
+                &lt;/files&gt;
+              &lt;/configuration&gt;
+            &lt;/execution&gt;
+          &lt;/executions&gt;
+        &lt;/plugin&gt;
+      &lt;/plugins&gt;
+    &lt;/build&gt;
+  &lt;/profile&gt;
+&lt;/profiles&gt;
+</code></pre><section><a id="Creating_the_version_in_ATR"></a>
+<h4>Creating the version in ATR</h4>
+<p>The <code>check-composing</code> goal can create the version in ATR when it does not exist yet, with the <code>createVersion</code> parameter. Enable it for the <code>atr-check-composing</code> execution in <code>pluginManagement</code>:</p>
+
+<pre class="prettyprint linenums"><code class="language-xml">&lt;build&gt;
+  &lt;pluginManagement&gt;
+    &lt;plugins&gt;
+      &lt;plugin&gt;
+        &lt;groupId&gt;org.apache.tooling&lt;/groupId&gt;
+        &lt;artifactId&gt;atr-maven-plugin&lt;/artifactId&gt;
+        &lt;executions&gt;
+          &lt;execution&gt;
+            &lt;id&gt;atr-check-composing&lt;/id&gt;
+            &lt;configuration&gt;
+              &lt;createVersion&gt;true&lt;/createVersion&gt;
+            &lt;/configuration&gt;
+          &lt;/execution&gt;
+        &lt;/executions&gt;
+      &lt;/plugin&gt;
+    &lt;/plugins&gt;
+  &lt;/pluginManagement&gt;
+&lt;/build&gt;
+</code></pre>
+<p>or from the command line with <code>-Datr.createVersion</code>.</p></section></section></section><section><a id="Directory_Organization"></a>
+<h2>Directory Organization</h2>
+<p>You can organize uploaded files in subdirectories with the <code>directory</code> parameter.</p>
+<p>For example, to upload binary distributions to the <code>binaries/</code> directory of the compose space, add a separate <code>upload</code> execution to the <code>push-to-atr</code> profile:</p>
+
+<pre class="prettyprint linenums"><code class="language-xml">&lt;profiles&gt;
+  &lt;profile&gt;
+    &lt;id&gt;push-to-atr&lt;/id&gt;
+    &lt;build&gt;
+      &lt;plugins&gt;
+        &lt;plugin&gt;
+          &lt;groupId&gt;org.apache.tooling&lt;/groupId&gt;
+          &lt;artifactId&gt;atr-maven-plugin&lt;/artifactId&gt;
+          &lt;executions&gt;
+            &lt;execution&gt;
+              &lt;id&gt;upload-bin-to-atr&lt;/id&gt;
+              &lt;goals&gt;
+                &lt;goal&gt;upload&lt;/goal&gt;
+              &lt;/goals&gt;
+              &lt;configuration&gt;
+                &lt;directory&gt;binaries&lt;/directory&gt;
+                &lt;files&gt;
+                  &lt;file&gt;${project.build.directory}/${project.artifactId}-${project.version}-bin.tar.gz&lt;/file&gt;
+                  &lt;file&gt;${project.build.directory}/${project.artifactId}-${project.version}-bin.tar.gz.sha512&lt;/file&gt;
+                  &lt;file&gt;${project.build.directory}/${project.artifactId}-${project.version}-bin.tar.gz.asc&lt;/file&gt;
+                &lt;/files&gt;
+              &lt;/configuration&gt;
+            &lt;/execution&gt;
+          &lt;/executions&gt;
+        &lt;/plugin&gt;
+      &lt;/plugins&gt;
+    &lt;/build&gt;
+  &lt;/profile&gt;
+&lt;/profiles&gt;
+</code></pre>
+<p>The source release is still uploaded by the <code>upload-to-atr</code> execution from the ASF parent POM.</p></section></section>        </main>
     </div>
     <hr/>
     <footer>

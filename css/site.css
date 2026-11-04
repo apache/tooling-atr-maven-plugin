@@ -31,6 +31,11 @@ body.topBarEnabled {
     padding-top: calc(var(--topbar-offset) + var(--breadcrumbs-offset));
 }
 
+/* keep anchor targets below the fixed topbar and breadcrumbs */
+html {
+    scroll-padding-top: calc(var(--topbar-offset) + var(--breadcrumbs-offset));
+}
+
 #topbar .nav-collapse {
     display: flex;
     align-items: center;
