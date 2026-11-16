@@ -56,16 +56,17 @@ notifications:
   issues: issues@tooling.apache.org
   pullrequests: issues@tooling.apache.org
 
+# https://releases.apache.org/projects/tooling-atr-maven-plugin
 project:
   metadata:
     key: tooling-atr-maven-plugin
     committee: tooling
     name: Apache Tooling ATR Maven Plugin
-    description: Maven plugin for ATR (Apache Test Release) integration to upload the Apache distribution artifacts for a release candidate.
+    description: Maven plugin for ATR (Apache Test Release) integration to upload
+      the Apache distribution artifacts for a release candidate.
     short_description: Maven plugin for ATR artifact uploads.
     homepage: https://apache.github.io/tooling-atr-maven-plugin/
-    #lifecycle_page: https://tooling.apache.org/trusted-releases.html
-    #download_page: https://apache.github.io/tooling-atr-maven-plugin/download.html
+    download_page: https://downloads.apache.org/tooling/tooling-atr-maven-plugin/
     bug_database: https://apache.github.io/tooling-atr-maven-plugin/issue-management.html
     mailing_lists: https://apache.github.io/tooling-atr-maven-plugin/mailing-lists.html
     repositories:
@@ -74,18 +75,58 @@ project:
       - build-management
     programming_languages:
       - java
+    version_method: semver
+    cycle_match: (\d+)\..*
   policy:
+    announce_release_template: |-
+      The Apache {{COMMITTEE}} project team is pleased to announce the
+      release of {{PROJECT_NAME}} {{VERSION}}.
+
+      This is Beta Software.
+
+      Release Notes - {{PROJECT_NAME}} - Version {{VERSION}}
+      https://github.com/apache/{{PROJECT_KEY}}/releases/tag/atr-maven-plugin-{{VERSION}}
+
+      On behalf of the Apache {{COMMITTEE}} project team,
+      {{YOUR_FULL_NAME}} ({{YOUR_ASF_ID}})
+    start_vote_template: |-
+      Hello {{COMMITTEE}},
+
+      I'd like to call a vote on releasing the following artifacts 
+      as Apache {{PROJECT_NAME}} {{VERSION}}. 
+
+      This vote is being conducted using an
+      Beta version of the Apache Trusted Releases (ATR) platform.
+      Please report any bugs or issues to the ASF Tooling team.
+
+      The release candidate page, including downloads, can be found at:
+      {{REVIEW_URL}}
+
+      The release artifacts are signed with one or more OpenPGP keys from:
+      {{KEYS_FILE}}
+
+      We solved issues:
+      https://github.com/apache/{{PROJECT_KEY}}/issues?q=milestone%3A{{VERSION}}
+
+      Please review the release candidate and vote accordingly.
+
+      [ ] +1 Release this package
+      [ ] +0 Abstain
+      [ ] -1 Do not release this package (please provide specific comments)
+
+      {{VOTE_INSTRUCTIONS}}
+
+      The vote is open for {{DURATION}} hours.
+
+      Thanks,
+      {{YOUR_FULL_NAME}} ({{YOUR_ASF_ID}})
+    download_path_suffix: '{{PROJECT_KEY}}'
+    auto_archive_prior_release: true
     vote_recipients:
       to: dev@tooling.apache.org
     announce_recipients:
-      to: announce@apache.org
-      cc:
-        - dev@tooling.apache.org
-    vote_mode: email
-    min_hours: 72
-    #license_check_mode: RAT
-    source_artifact_paths:
-      - "*-source-release.zip"
+      to: dev@tooling.apache.org
   features:
     atr_sync: true
+    atr_sync_mode: full
 
