@@ -42,5 +42,15 @@ public interface AtrClientFactory {
      * @param jwtCache the reference for caching JWT across clients
      * @return the ATR client
      */
-    AtrClient createAtrClient(URL baseUrl, String username, String pat, AtomicReference<String> jwtCache);
+    AtrClient createAtrClient(URL baseUrl, String username, String pat, AtomicReference<Jwt> jwtCache);
+
+    /**
+     * Create a new ATR client authenticated with a GitHub OIDC token (Trusted Publishing).
+     *
+     * @param baseUrl the base URL of the ATR server
+     * @param gitHubOidc the GitHub OIDC token request
+     * @param sourceCommit the source commit recorded by ATR with uploaded files, may be null
+     * @return the ATR client
+     */
+    AtrClient createAtrClient(URL baseUrl, GitHubOidc gitHubOidc, String sourceCommit);
 }

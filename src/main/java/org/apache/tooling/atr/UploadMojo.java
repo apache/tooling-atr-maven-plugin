@@ -79,10 +79,15 @@ public class UploadMojo extends AbstractAtrMojo {
     @Override
     protected void atrExecute() throws AtrClientException {
         Optional<String> sourceCommit = getSourceCommit();
-        AtrClient client = createAtrClient();
+        AtrClient client = createAtrClient(sourceCommit.orElse(null));
 
         if (sourceCommit.isPresent()) {
-            setSourceCommit(client, sourceCommit.get());
+            if (client.isGitHubOidc()) {
+                // with GitHub OIDC the source commit is recorded by ATR with uploaded files
+                getLog().info("Source commit recorded in ATR with uploaded files: " + sourceCommit.get());
+            } else {
+                setSourceCommit(client, sourceCommit.get());
+            }
         }
 
         if (dryRun) {

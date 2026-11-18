@@ -34,16 +34,33 @@ class AtrClientMock implements AtrClient {
 
     private final Logger logger = LoggerFactory.getLogger(AtrClientMock.class);
 
-    public AtrClientMock(URL baseUrl, String username, String pat, AtomicReference<String> jwtCache) {
-        String jwtCacheValue = jwtCache.get();
+    private final boolean gitHubOidc;
+
+    public AtrClientMock(URL baseUrl, String username, String pat, AtomicReference<Jwt> jwtCache) {
+        Jwt jwtCacheValue = jwtCache.get();
         if (jwtCacheValue != null) {
-            logger.info("[Mock ATR client] using cached JWT: {}", jwtCacheValue);
+            logger.info("[Mock ATR client] using cached JWT: {}", jwtCacheValue.getToken());
         } else {
             logger.info("[Mock ATR client] creating new JWT for username: {}", username);
-            jwtCache.set("mock-jwt-" + username);
+            jwtCache.set(new Jwt("mock-jwt-" + username, Long.MAX_VALUE));
         }
 
         logger.info("[Mock ATR client] created base URL: {}, username: {}, pat: {}", baseUrl, username, pat);
+        this.gitHubOidc = false;
+    }
+
+    public AtrClientMock(URL baseUrl, GitHubOidc gitHubOidc, String sourceCommit) {
+        logger.info(
+                "[Mock ATR client] created base URL: {}, GitHub OIDC request URL: {}, source commit: {}",
+                baseUrl,
+                gitHubOidc.getRequestUrl(),
+                sourceCommit);
+        this.gitHubOidc = true;
+    }
+
+    @Override
+    public boolean isGitHubOidc() {
+        return gitHubOidc;
     }
 
     @Override

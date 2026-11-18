@@ -21,6 +21,7 @@ package org.apache.tooling.atr.client;
 import java.nio.file.Path;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -58,6 +59,16 @@ public interface AtrClient {
      * @throws AtrClientException if the release creation fails
      */
     ReleaseInfo createRelease(String project, String version) throws AtrClientException;
+
+    /**
+     * Check if the client is authenticated with a GitHub OIDC token (Trusted Publishing).
+     * <p>
+     * In this case the source commit is given when the client is created and is recorded by ATR
+     * with uploaded files, {@link #setSourceCommit(String, String, String)} is not allowed.
+     *
+     * @return true if the client is authenticated with a GitHub OIDC token
+     */
+    boolean isGitHubOidc();
 
     /**
      * Record the source commit the release was built from.
@@ -116,6 +127,51 @@ public interface AtrClient {
 
         public void setJwt(String jwt) {
             this.jwt = jwt;
+        }
+    }
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    class PublisherJwtCreateRequest {
+        @JsonProperty("publisher")
+        private final String publisher;
+
+        @JsonProperty("jwt")
+        private final String jwt;
+
+        @JsonProperty("source_commit")
+        private final String sourceCommit;
+
+        PublisherJwtCreateRequest(String publisher, String jwt, String sourceCommit) {
+            this.publisher = publisher;
+            this.jwt = jwt;
+            this.sourceCommit = sourceCommit;
+        }
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    class PublisherJwtCreateResponse {
+        @JsonProperty("jwt")
+        private String jwt;
+
+        @JsonProperty("expires")
+        private long expires;
+
+        public String getJwt() {
+            return jwt;
+        }
+
+        public long getExpires() {
+            return expires;
+        }
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    class GitHubOidcTokenResponse {
+        @JsonProperty("value")
+        private String value;
+
+        public String getValue() {
+            return value;
         }
     }
 
