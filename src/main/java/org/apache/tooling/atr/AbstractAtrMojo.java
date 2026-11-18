@@ -78,6 +78,9 @@ public abstract class AbstractAtrMojo extends AbstractMojo {
     /**
      * Server ID from settings.xml containing ATR credentials.
      * The server's username should be the ASF user ID, and the password should be the Personal Access Token (PAT).
+     * <p>
+     * When the build runs in GitHub Actions with the <code>id-token: write</code> permission,
+     * a GitHub OIDC token (Trusted Publishing) is used instead, and the server is not used.
      *
      * @since 1.0.0-alpha-1
      */
@@ -136,7 +139,18 @@ public abstract class AbstractAtrMojo extends AbstractMojo {
      * @return the ATR client
      */
     protected AtrClient createAtrClient() {
-        return atrClientProvider.createAtrClient(url, serverId);
+        return createAtrClient(null);
+    }
+
+    /**
+     * Create an ATR client with JWT caching support.
+     *
+     * @param sourceCommit the source commit recorded by ATR with uploaded files when GitHub OIDC is used,
+     *                     may be null
+     * @return the ATR client
+     */
+    protected AtrClient createAtrClient(String sourceCommit) {
+        return atrClientProvider.createAtrClient(url, serverId, sourceCommit);
     }
 
     /**

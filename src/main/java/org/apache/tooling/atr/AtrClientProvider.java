@@ -26,6 +26,7 @@ import javax.inject.Singleton;
 import java.net.URL;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.maven.execution.MavenSession;
@@ -35,6 +36,8 @@ import org.apache.maven.settings.crypto.SettingsDecrypter;
 import org.apache.maven.settings.crypto.SettingsDecryptionResult;
 import org.apache.tooling.atr.client.AtrClient;
 import org.apache.tooling.atr.client.AtrClientFactory;
+import org.apache.tooling.atr.client.GitHubOidc;
+import org.apache.tooling.atr.client.Jwt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,23 +75,35 @@ class AtrClientProvider {
     /**
      * Create a new ATR client.
      * <p>
-     * Credentials are taken from the server in settings.xml. If the server or its credentials are missing,
-     * the client is created without them and will report the error when authentication is required.
+     * When the build runs in GitHub Actions with OIDC enabled, the client is authenticated with a GitHub OIDC token
+     * (Trusted Publishing). Otherwise, credentials are taken from the server in settings.xml.
+     * If the server or its credentials are missing, the client is created without them
+     * and will report the error when authentication is required.
      *
      * @param baseUrl the base URL of the ATR server
      * @param serverId the server ID from settings.xml containing the credentials for the ATR server
+     * @param sourceCommit the source commit recorded by ATR with uploaded files when GitHub OIDC is used,
+     *                     may be null
      * @return the ATR client
      */
     @SuppressWarnings("unchecked")
-    AtrClient createAtrClient(URL baseUrl, String serverId) {
+    AtrClient createAtrClient(URL baseUrl, String serverId, String sourceCommit) {
         MavenSession session = mavenSessionProvider.get();
-        // retrieve the JWT from the session cache if it exists, otherwise create a new cache entry
-        AtomicReference<String> jwtCache = (AtomicReference<String>) session.getRepositorySession()
-                .getData()
-                .computeIfAbsent(dataKey(baseUrl, serverId), AtomicReference::new);
+
+        Optional<GitHubOidc> gitHubOidc = GitHubOidc.fromEnvironment();
+        if (gitHubOidc.isPresent()) {
+            logger.info("Using GitHub OIDC token (Trusted Publishing) for ATR authentication");
+            return atrClientFactory.createAtrClient(baseUrl, gitHubOidc.get(), sourceCommit);
+        }
+
         Server server = getServer(session, serverId);
         String username = server != null ? server.getUsername() : null;
         String pat = server != null ? server.getPassword() : null;
+
+        // retrieve the JWT from the session cache if it exists, otherwise create a new cache entry
+        AtomicReference<Jwt> jwtCache = (AtomicReference<Jwt>) session.getRepositorySession()
+                .getData()
+                .computeIfAbsent(dataKey(baseUrl, serverId), AtomicReference::new);
         return atrClientFactory.createAtrClient(baseUrl, username, pat, jwtCache);
     }
 

@@ -27,6 +27,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -40,6 +41,11 @@ import org.slf4j.LoggerFactory;
  */
 class AtrClientImpl implements AtrClient {
 
+    /**
+     * Lifetime of the ATR JWT created from the PAT, ATR does not return its expiry time.
+     */
+    private static final long PAT_JWT_TTL_SECONDS = 30 * 60;
+
     private final Logger logger = LoggerFactory.getLogger(AtrClientImpl.class);
 
     private final URL baseUrl;
@@ -48,9 +54,16 @@ class AtrClientImpl implements AtrClient {
 
     private final String pat;
 
-    private final AtomicReference<String> jwtCache;
+    private final AtomicReference<Jwt> jwtCache;
+
+    private final GitHubOidc gitHubOidc;
 
     private final ObjectMapper objectMapper;
+
+    /**
+     * The source commit given when the ATR JWT is issued from the GitHub OIDC token.
+     */
+    private final String sourceCommit;
 
     /**
      * Create a new ATR client.
@@ -58,25 +71,68 @@ class AtrClientImpl implements AtrClient {
      * @param baseUrl the base URL of the ATR server
      * @param jwtCache the reference for caching JWT across goals
      */
-    AtrClientImpl(URL baseUrl, String username, String pat, AtomicReference<String> jwtCache) {
+    AtrClientImpl(URL baseUrl, String username, String pat, AtomicReference<Jwt> jwtCache) {
         this.baseUrl = baseUrl;
         this.username = username;
         this.pat = pat;
         this.jwtCache = jwtCache;
+        this.gitHubOidc = null;
+        this.sourceCommit = null;
         this.objectMapper = new ObjectMapper();
     }
 
     /**
-     * Create a JWT from the PAT, using cached JWT if available.
+     * Create a new ATR client authenticated with a GitHub OIDC token (Trusted Publishing).
+     *
+     * @param baseUrl the base URL of the ATR server
+     * @param gitHubOidc the GitHub OIDC token request
+     * @param sourceCommit the source commit recorded by ATR with uploaded files, may be null
+     */
+    AtrClientImpl(URL baseUrl, GitHubOidc gitHubOidc, String sourceCommit) {
+        this.baseUrl = baseUrl;
+        this.username = null;
+        this.pat = null;
+        // ATR JWT issued from the GitHub OIDC token is short-lived, so it is not shared across goals
+        this.jwtCache = new AtomicReference<>();
+        this.gitHubOidc = gitHubOidc;
+        this.sourceCommit = sourceCommit;
+        this.objectMapper = new ObjectMapper();
+    }
+
+    @Override
+    public boolean isGitHubOidc() {
+        return gitHubOidc != null;
+    }
+
+    /**
+     * Create a JWT from the PAT or GitHub OIDC token, using cached JWT if not about to expire.
      *
      * @throws AtrClientException if JWT creation fails
      */
     private void ensureJwt() throws AtrClientException {
-        if (jwtCache.get() != null) {
-            logger.debug("Using cached JWT");
+        Jwt jwt = jwtCache.get();
+        if (jwt != null && jwt.isValid()) {
+            // TODO: temporary info for testing, restore to debug
+            logger.info("Using cached JWT");
             return;
         }
 
+        // the JWT create request must not carry the previous JWT
+        jwtCache.set(null);
+
+        if (gitHubOidc != null) {
+            createTrustedPublisherJwt();
+        } else {
+            createPatJwt();
+        }
+    }
+
+    /**
+     * Create a JWT from the PAT.
+     *
+     * @throws AtrClientException if JWT creation fails
+     */
+    private void createPatJwt() throws AtrClientException {
         if (username == null || pat == null) {
             throw new AtrClientException(
                     "Missing ATR credentials: username (ASF user ID) and PAT (Personal Access Token) are required");
@@ -86,16 +142,68 @@ class AtrClientImpl implements AtrClient {
             // Create JWT request
             JwtCreateRequest request = new JwtCreateRequest(username, pat);
 
+            // expiry is counted from before the request, so it is not later than on the ATR side
+            long expires = Instant.now().getEpochSecond() + PAT_JWT_TTL_SECONDS;
+
             // Execute POST request
             JwtCreateResponse jwtCreateResponse = executePost("api/jwt/create", request, JwtCreateResponse.class);
-            String jwt = jwtCreateResponse.getJwt();
-            logger.debug("JWT created successfully");
+            // TODO: temporary info for testing, restore to debug
+            logger.info("JWT created successfully from PAT");
 
             // Cache JWT for reuse across goals
-            jwtCache.set(jwt);
+            jwtCache.set(new Jwt(jwtCreateResponse.getJwt(), expires));
         } catch (IOException e) {
             throw new AtrClientException("Failed to create JWT from PAT", e);
         }
+    }
+
+    /**
+     * Exchange a GitHub OIDC token for a short-lived ATR JWT.
+     *
+     * @throws AtrClientException if JWT creation fails
+     */
+    private void createTrustedPublisherJwt() throws AtrClientException {
+        try {
+            // each GitHub OIDC token can be exchanged only once, so request a new one each time
+            String oidcToken = requestGitHubOidcToken();
+
+            PublisherJwtCreateRequest request = new PublisherJwtCreateRequest("github", oidcToken, sourceCommit);
+            PublisherJwtCreateResponse response =
+                    executePost("api/publisher/jwt/create", request, PublisherJwtCreateResponse.class);
+            // TODO: temporary info for testing, restore to debug
+            logger.info("JWT created successfully from GitHub OIDC token");
+
+            jwtCache.set(new Jwt(response.getJwt(), response.getExpires()));
+        } catch (IOException e) {
+            throw new AtrClientException("Failed to create JWT from GitHub OIDC token", e);
+        }
+    }
+
+    /**
+     * Request a GitHub OIDC token with the ATR server as audience.
+     *
+     * @return the GitHub OIDC token
+     */
+    private String requestGitHubOidcToken() throws IOException, AtrClientException {
+        String audience = new URL(baseUrl, "/").toString();
+        String requestUrl = gitHubOidc.getRequestUrl();
+        URL url = new URL(requestUrl + (requestUrl.contains("?") ? "&" : "?") + "audience=" + encode(audience));
+
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("GET");
+        conn.setRequestProperty("Authorization", "Bearer " + gitHubOidc.getRequestToken());
+
+        int responseCode = conn.getResponseCode();
+        if (responseCode != HttpURLConnection.HTTP_OK) {
+            String errorResponse = readErrorResponse(conn.getErrorStream());
+            throw new AtrClientException(responseCode, errorResponse, "GET", url);
+        }
+
+        GitHubOidcTokenResponse response = objectMapper.readValue(conn.getInputStream(), GitHubOidcTokenResponse.class);
+        if (response.getValue() == null || response.getValue().isEmpty()) {
+            throw new AtrClientException("GitHub did not return an OIDC token");
+        }
+        return response.getValue();
     }
 
     @Override
@@ -209,9 +317,7 @@ class AtrClientImpl implements AtrClient {
         URL uploadUrl = new URL(baseUrl, url);
         HttpURLConnection conn = (HttpURLConnection) uploadUrl.openConnection();
         conn.setRequestMethod("GET");
-        if (jwtCache.get() != null) {
-            conn.setRequestProperty("Authorization", "Bearer " + jwtCache.get());
-        }
+        setAuthorization(conn);
 
         // Check response
         int responseCode = conn.getResponseCode();
@@ -231,9 +337,7 @@ class AtrClientImpl implements AtrClient {
         HttpURLConnection conn = (HttpURLConnection) uploadUrl.openConnection();
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Content-Type", "application/json");
-        if (jwtCache.get() != null) {
-            conn.setRequestProperty("Authorization", "Bearer " + jwtCache.get());
-        }
+        setAuthorization(conn);
         conn.setDoOutput(true);
 
         // Send request
@@ -252,9 +356,7 @@ class AtrClientImpl implements AtrClient {
         HttpURLConnection conn = (HttpURLConnection) uploadUrl.openConnection();
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Content-Type", "application/octet-stream");
-        if (jwtCache.get() != null) {
-            conn.setRequestProperty("Authorization", "Bearer " + jwtCache.get());
-        }
+        setAuthorization(conn);
         conn.setDoOutput(true);
         // Stream the file instead of buffering it in memory
         conn.setFixedLengthStreamingMode(Files.size(file));
@@ -265,6 +367,13 @@ class AtrClientImpl implements AtrClient {
         }
 
         return readPostResponse(conn, uploadUrl, responseClass);
+    }
+
+    private void setAuthorization(HttpURLConnection conn) {
+        Jwt jwt = jwtCache.get();
+        if (jwt != null) {
+            conn.setRequestProperty("Authorization", "Bearer " + jwt.getToken());
+        }
     }
 
     private <T> T readPostResponse(HttpURLConnection conn, URL uploadUrl, Class<T> responseClass)

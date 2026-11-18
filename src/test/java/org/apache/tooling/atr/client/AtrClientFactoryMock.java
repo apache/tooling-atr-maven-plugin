@@ -48,7 +48,12 @@ class AtrClientFactoryMock implements AtrClientFactory {
     }
 
     @Override
-    public AtrClient createAtrClient(URL baseUrl, String username, String pat, AtomicReference<String> jwtCache) {
+    public AtrClient createAtrClient(URL baseUrl, String username, String pat, AtomicReference<Jwt> jwtCache) {
         return new AtrClientMock(baseUrl, username, pat, jwtCache);
+    }
+
+    @Override
+    public AtrClient createAtrClient(URL baseUrl, GitHubOidc gitHubOidc, String sourceCommit) {
+        return new AtrClientMock(baseUrl, gitHubOidc, sourceCommit);
     }
 }

@@ -39,6 +39,33 @@ The username should be your ASF user ID and the password should be your Personal
 
 For security, you should encrypt your password using [Maven's password encryption](https://maven.apache.org/guides/mini/guide-encryption.html).
 
+## GitHub Actions with Trusted Publishing
+
+In GitHub Actions, the plugin can authenticate with a GitHub OIDC token
+instead of a PAT, see [ATR Trusted Publishing](https://releases.apache.org/docs/trusted-publishing).
+
+The GitHub OIDC token is used when the job has the `id-token: write` permission,
+it takes precedence over the credentials from `settings.xml`:
+
+```yaml
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      ...
+      - run: mvn deploy -Papache-release,push-to-atr
+```
+
+The plugin exchanges the GitHub OIDC token for a short-lived ATR token, which allows only to create a version
+and upload files for the project the workflow is registered to in ATR. The source commit is recorded by ATR
+with the uploaded files.
+
+The workflow must also fulfill the ATR requirements for Trusted Publishing, for example it must be registered
+as the compose workflow of the project and run on a GitHub-hosted runner.
+
 ## Basic Upload
 
 To upload release artifacts to ATR:

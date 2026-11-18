@@ -37,7 +37,12 @@ public class AtrClientFactoryImpl implements AtrClientFactory {
     }
 
     @Override
-    public AtrClient createAtrClient(URL baseUrl, String username, String pat, AtomicReference<String> jwtCache) {
+    public AtrClient createAtrClient(URL baseUrl, String username, String pat, AtomicReference<Jwt> jwtCache) {
         return new AtrClientImpl(baseUrl, username, pat, jwtCache);
+    }
+
+    @Override
+    public AtrClient createAtrClient(URL baseUrl, GitHubOidc gitHubOidc, String sourceCommit) {
+        return new AtrClientImpl(baseUrl, gitHubOidc, sourceCommit);
     }
 }
