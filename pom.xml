@@ -99,7 +99,7 @@ under the License.
   </distributionManagement>
 
   <properties>
-    <mavenVersion>3.10.1</mavenVersion>
+    <mavenVersion>3.10.2</mavenVersion>
 
     <minimalJavaBuildVersion>17</minimalJavaBuildVersion>
 
